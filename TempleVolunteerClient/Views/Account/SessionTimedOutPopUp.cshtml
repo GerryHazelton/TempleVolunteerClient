@@ -1,0 +1,23 @@
+﻿<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static" data-keyboard="false">
+    <div style="height:50px"></div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                Your session has timed out; you need to log in again.
+            </div>
+            <div class="col-3">
+                <input type="button" value="OK" onclick="location.href='@Url.Action("LogOut", "Account")'" />
+            </div>
+            <div>&nbsp;</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#showMessage").modal('show');
+            $(".container").css('background-color', 'transparent');
+        });
+    </script> 
+}

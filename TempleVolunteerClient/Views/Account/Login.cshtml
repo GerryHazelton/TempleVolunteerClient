@@ -1,0 +1,59 @@
+﻿@model TempleVolunteerClient.LoginViewModel
+
+<div class="login-form">
+    <form method="post" asp-controller="Account" asp-action="Login">
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+        <div style="margin-left:-10px">
+            <div class="form-group row" style="margin-bottom:10px">
+                <div class="col-4" style="text-align:right">
+                    <label asp-for="EmailAddress"></label>
+                </div>
+                <div class="col-8">
+                    <input id="EmailAddress" asp-for="EmailAddress" class="form-control" />
+                    <span asp-validation-for="EmailAddress" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row" style="margin-bottom:10px; text-align:right">
+                <div class="col-4">
+                    <label asp-for="Password"></label>
+                </div>
+                <div class="col-8">
+                    <input asp-for="Password" class="form-control" value="Mataji99#" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row" style="margin-bottom:15px; text-align:right">
+                <div class="col-4">
+                    <label asp-for="TemplePropertyId"></label>
+                </div>
+                <div class="col-8">
+                    <select asp-for="TemplePropertyId" asp-items="Model.TemplePropertyList" class="form-control"></select>
+                    <span asp-validation-for="TemplePropertyId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row" style="margin-bottom:10px">
+                <div class="col-3 offset-4">
+                    <button type="submit" class="btn btn-primary form-control">
+                        Login
+                    </button>
+                </div>
+                <div class="col-4">
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Register</a>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-5">
+                    <a asp-controller="Account" asp-action="ForgotPassword" class="btn btn-link">Forgot Password</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+	<script>
+		$(document).ready(function () {
+
+		});
+	</script>
+}

@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Temple Volunteer</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebApplication1.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sidebar.css" />
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar-->
+        <div class="border-end bg-white" id="sidebar-wrapper">
+            <div class="sidebar-heading border-bottom bg-light">Temple Volunteer</div>
+            @{
+                if (!String.IsNullOrEmpty(@Context.Session.GetString("FirstName")))
+                {
+                    if (Context.Session.GetInt32("IsAdmin") == 1)
+                    {
+                            <div class="list-group list-group-flush">
+                                <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/Home/Privacy">Privacy</a>
+                                <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/Area/Index">Area</a>
+                            </div>
+                    }
+                    else
+                    {
+                            <div class="list-group list-group-flush">
+                                <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Events</a>
+                                <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Profile</a>
+                            </div>
+                    }
+                }
+            }
+        </div>
+        <!-- Page content wrapper-->
+        <div id="page-content-wrapper">
+            <!-- Top navigation-->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    @{
+                        if (!String.IsNullOrEmpty(@Context.Session.GetString("FirstName")))
+                        {
+                            <button class="btn btn-primary" id="sidebarToggle">Toggle Menu</button>
+                        }
+                    }
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+                            @{
+                                if (!String.IsNullOrEmpty(@Context.Session.GetString("FirstName")))
+                                {
+                                    <li class="nav-item active"><a class="nav-link" href="/Account/Logout">Logout</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#!">Messages</a></li>
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">My Settings</a>
+                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                            <a class="dropdown-item" href="#!">My Profile</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="/Account/ResetPassword">Reset Password</a>
+                                        </div>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="nav-item active"><a class="nav-link" href="/Account/Login">Login</a></li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <!-- Page content-->
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/sidebar.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

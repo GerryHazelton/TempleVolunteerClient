@@ -1,0 +1,430 @@
+﻿@model StaffViewModel
+
+<style>
+    .modal-dialog {
+        overflow-y: initial !important
+    }
+
+    .modal-body {
+        height: 250px;
+        overflow-y: auto;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 250px 200px auto;
+        background-color: #2196F3;
+        padding: 5px;
+    }
+
+    .grid-item {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.8);
+        padding: 5px;
+        font-size: 13px;
+        text-align: center;
+    }
+</style>
+
+<div style="height:50px">&nbsp;</div>
+<div class="border container" style="padding:30px; width:700px">
+    <div class="border container" style="background-color:lightblue; padding:10px; width:600px">
+        <div>&nbsp;</div>
+        <div class="col-6 offset-3">
+            <a href="#" onclick="MyProfile(@Model.StaffId)" class="btn btn-primary btn-lg btn-block">My Profile</a>
+        </div>
+        <div>&nbsp;</div>
+        <div class="col-6 offset-3">
+            <a href="#" onclick="ChangePassword(@Model.StaffId)" class="btn btn-primary btn-lg btn-block">Change Password</a>
+        </div>
+        <div>&nbsp;</div>
+        <div class="col-6 offset-3">
+            <a href="#" onclick="SendMessage(@Model.StaffId)" class="btn btn-primary btn-lg btn-block">Send Message</a>
+            <a href="#" onclick="ViewMessageHistory(@Model.StaffId)"><span style="font-weight:500">(view message history)</span></a>
+        </div>
+        <div>&nbsp;</div>
+        <div class="col-6 offset-3">
+            <a href="#" onclick="ProgramEvents(@Model.StaffId)" class="btn btn-primary btn-lg btn-block">Program Events</a>
+        </div>
+        <div>&nbsp;</div>
+    </div>
+</div>
+
+<div class="modal fade" id="myProfileModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">My Profile</h3>
+            </div>
+            <div class="modal-body">
+                <label style="color:blue" class="font-weight-bold">First Name:</label>&nbsp;<span id="staffFirstName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Last Name:</label>&nbsp;<span id="staffLastName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Address:</label>&nbsp;<span id="staffAddress"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Address2:</label>&nbsp;<span id="staffAddress2"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">City:</label>&nbsp;<span id="staffCity"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">State:</label>&nbsp;<span id="staffState"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Postal Code:</label>&nbsp;<span id="staffPostalCode"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Country:</label>&nbsp;<span id="staffCountry"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Email Address:</label>&nbsp;<span id="staffEmailAddress"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Phone Number:</label>&nbsp;<span id="staffPhoneNumber"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Gender:</label>&nbsp;<span id="staffGender"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Role:</label>&nbsp;<span id="staffRole"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Lesson Student:</label>&nbsp;<span id="staffLessonStudent"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Kriyaban:</label>&nbsp;<span id="staffKriyaban"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Trained In First Aid:</label>&nbsp;<span id="staffFirstAid"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Trainied In CPR:</label>&nbsp;<span id="staffCPR"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Change Password</h3>
+            </div>
+            <div class="modal-body">
+                <div style="color:blue" class="font-weight-bold">
+                    New Password
+                </div>
+                <div>
+                    <input type="password" id="newPasswordId" class="form-control" />
+                </div>
+                <div>&nbsp;</div>
+                <div style="color:blue" class="font-weight-bold">
+                    Re-enter Password
+                </div>
+                <div>
+                    <input type="password" id="renterPasswordId" class="form-control" />&nbsp;<label id="passwordErrorId" style="color:red" class="font-weight-bold">passwords don't match</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="changePasswordSaveId" onclick="SavePassword()" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordSuccessModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Change Password</h3>
+            </div>
+            <div class="modal-body">
+                <div style="color:blue" class="font-weight-bold">
+                    Your password has been successfully changed
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sendMessageModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Send Message</h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label class="font-weight-bold" style="color:blue">From:</label>&nbsp;<label id="sendMessageFromId"></label>
+                </div>
+                <div>
+                    <label class="font-weight-bold" style="color:blue">To:</label>&nbsp;&nbsp;<span id="staffDropdownId" class="col-1"></span>
+                </div>
+                <div>
+                    <textarea placeholder="Enter your message here" rows="3" class="form-control" id="messageId" required>asdfasdf</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="messageSendId" onclick="MessageSent()" class="btn btn-primary">Send</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="messageSentSuccessModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Send Message</h3>
+            </div>
+            <div class="modal-body">
+                <div style="color:blue" class="font-weight-bold">
+                    Your message has been successfully sent
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="showMessagesModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Messages</h3>
+            </div>
+            <div class="modal-body">
+                <div id="messages"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="programEventsModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Program Events</h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <span id="programEventDropdownId" class="col-1"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="goToProgramEventId" onclick="GoToProgramEvent(@Model.StaffId)" class="btn btn-primary">Go To Program</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+        });
+
+        function MyProfile(staffId) {
+            $.ajax({
+                url: "/Staff/GetStaff?staffId=" + staffId,
+                type: "GET",
+                datatype: "json",
+                serverSide: true,
+                data: "{}",
+                success: function (data) {
+                    $('#staffFirstName').html(data.firstName);
+                    $('#staffLastName').html(data.lastName);
+                    $('#staffAddress').html(data.address);
+                    $('#staffAddress2').html(data.address2);
+                    $('#staffCity').html(data.city);
+                    $('#staffState').html(data.state);
+                    $('#staffPostalCode').html(data.postalCode);
+                    $('#staffCountry').html(data.country);
+                    $('#staffEmailAddress').html(data.emailAddress);
+                    $('#staffPhoneNumber').html(data.phoneNumber);
+                    $('#staffGender').html(GetGender(data.gender));
+                    $('#staffRole').html(GetRole(data.roleId));
+                    $('#staffLessonStudent').html(data.lessonStudent);
+                    $('#staffKriyaban').html(data.kriyaban ? "Yes" : "No");
+                    $('#staffFirstAid').html(data.firstAid ? "Yes" : "No");
+                    $('#staffCPR').html(data.cpr ? "Yes" : "No");
+                    $("#myProfileModal").modal();
+                }
+            });
+        };
+
+        function ChangePassword(staffId) {
+            $.ajax({
+                url: "/Staff/GetStaff?staffId=" + staffId,
+                type: "GET",
+                datatype: "json",
+                serverSide: true,
+                data: "{}",
+                success: function (data) {
+                    $("#changePasswordModal").modal();
+                    $("#passwordErrorId").hide();
+                }
+            });
+        };
+
+        function SavePassword() {
+            var newPassword = document.getElementById("newPasswordId");
+            var renterPassword = document.getElementById("renterPasswordId");
+
+            if (newPassword.value != renterPassword.value) {
+                $("#passwordErrorId").show();
+            }
+            else {
+                $("#passwordErrorId").hide();
+
+                $.ajax({
+                    url: "/Account/ChangePassword?newPassword=" + newPassword.value,
+                    type: "GET",
+                    datatype: "json",
+                    serverSide: true,
+                    data: "{}",
+                    success: function (data) {
+                        $("#changePasswordModal").modal("hide");
+                        $("#changePasswordSuccessModal").modal();
+                    }
+                });
+            }
+        };
+
+        function SendMessage(staffId) {
+            $.ajax({
+                url: "/Staff/GetStaff?staffId=" + staffId,
+                type: "GET",
+                datatype: "json",
+                serverSide: true,
+                data: "{}",
+                success: function (data) {
+                    document.getElementById("sendMessageFromId").innerText = data.firstName + ' ' + data.lastName;
+
+                    $.ajax({
+                        url: "/Staff/GetAllStaff",
+                        type: "GET",
+                        datatype: "json",
+                        serverSide: true,
+                        data: "{}",
+                        success: function (data) {
+                            var staffDropDown = '<select id="staffId2" class="form-control">';
+                            for (var i = 0; i < data.length; i++) {
+                                staffDropDown += '<option value="' + data[i].value + '">' + data[i].text.trim() + '</option>';
+                            }
+                            staffDropDown += '</select>';
+                            $("#staffDropdownId").html(staffDropDown);
+                        }
+                    });
+
+                    $("#sendMessageModal").modal();
+                }
+            });
+        };
+
+        function MessageSent() {
+            var staffId = document.getElementById("staffId2").value;
+            var message = document.getElementById("messageId").value;
+
+            if (message == "") {
+                $("#sendMessageModal").hide();
+            } else {
+                $.ajax({
+                    url: "/Account/SendMessage?staffId=" + staffId + "&message=" + message,
+                    type: "POST",
+                    datatype: "json",
+                    serverSide: true,
+                    data: "{}",
+                    success: function (data) {
+                        $("#sendMessageModal").modal("hide");
+                        $("#messageSentSuccessModal").modal();
+                    }
+                });
+            }
+        };
+
+        function ViewMessageHistory(staffId) {
+            $.ajax({
+                url: "/Account/GetAllMessagesById?staffId=" + staffId,
+                type: "GET",
+                datatype: "json",
+                serverSide: true,
+                data: "{}",
+                success: function (data) {
+                    $("#messages").html('');
+                    var messages = '<div class="grid-container">';
+                    messages += '<div class="grid-item"><b>Date & Time Sent</b></div >';
+                    messages += '<div class="grid-item"><b>Recipient</b></div >';
+                    messages += '<div class="grid-item"><b>Message</b></div >';
+                    for (var i = 0; i < data.length; i++) {
+                        const dateTime = new Date(data[i].dateTime);
+                        messages += '<div class="grid-item">' + dateTime + '</div >';
+                        messages += '<div class="grid-item">' + data[i].to + '</div >';
+                        messages += '<div class="grid-item">' + data[i].messageSent + '</div >';
+                    }
+                    messages += '</div>';
+                    $("#messages").html(messages);
+                    $("#showMessagesModal").modal();
+                }
+            });
+        };
+
+        function ProgramEvents(staffId) {
+            $.ajax({
+                url: "/ProgramEvent/GetStaffProgramEventsById?staffId=" + staffId,
+                type: "GET",
+                datatype: "json",
+                serverSide: true,
+                data: "{}",
+                success: function (data) {
+                    var staffDropDown;
+                    if (data.length == 0) {
+                        staffDropDown = '<textarea rows=4 readonly class="form-control">You are currently not assigned to any program events. You may send a message to one of the Summer Day School Administrators and inquire about your program event assignment.</textarea>';
+                        $("#goToProgramEventId").hide();
+                    } else {
+                        staffDropDown = '<select id="programEventId" class="form-control">';
+                        for (var i = 0; i < data.length; i++) {
+                            staffDropDown += '<option value="' + data[i].value + '">' + data[i].text.trim() + '</option>';
+                        }
+                        staffDropDown += '</select>';
+                    }
+                    $("#programEventDropdownId").html(staffDropDown);
+                    $("#programEventsModal").modal();
+                }
+            });
+        };
+
+        function GoToProgramEvent(staffId) {
+            var programEventId = document.getElementById("programEventId").value;
+            window.location = "/ProgramEvent/NonAdminManageProgramEvent?programEventId=" + programEventId + "&staffId=" + staffId;
+        }
+
+        function GetGender(value) {
+            if (value == 1) {
+                return "Man";
+            }
+            else {
+                return "Woman";
+            }
+        }
+
+        function GetRole(roleId) {
+            $.ajax({
+                type: "GET",
+                url: "/Role/RoleGet?roleId=" + roleId,
+                datatype: "json",
+                serverSide: true,
+                success: function (data) {
+                    $('#staffRole').html(data.data["name"]);
+                },
+                error: function () {
+                    alert('error');
+                }
+            });
+        }
+    </script>
+}
+
