@@ -1,6 +1,4 @@
-﻿using TempleVolunteerClient.Common;
-
-namespace TempleVolunteerClient
+﻿namespace TempleVolunteerClient
 {
     public class EventTypeRequest : Audit
     {
@@ -8,7 +6,6 @@ namespace TempleVolunteerClient
         public string Name { get; set; }
         public string Description { get; set; }
         public string Note { get; set; }
-        public int PropertyId { get; set; }
 
         public ICollection<AreaRequest> Areas { get; set; }
 

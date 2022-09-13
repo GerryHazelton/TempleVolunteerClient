@@ -1,4 +1,6 @@
-﻿namespace TempleVolunteerClient
+﻿using TempleVolunteerClient;
+
+namespace TempleVolunteerClient
 {
     public class RefreshTokenResponse
     {

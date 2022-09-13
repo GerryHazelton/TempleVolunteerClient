@@ -1,7 +1,7 @@
 ﻿using System;
-using TempleVolunteerClient.Common;
+using TempleVolunteerClient;
 
-namespace VolunteerAPI.Domain
+namespace TempleVolunteerClient
 {
     public class CredentialRequest : Audit
     {

@@ -1,7 +1,4 @@
-﻿
-
-
-namespace TempleVolunteerClient
+﻿namespace TempleVolunteerClient
 {
     public class AreaResponse : BaseResponse
     {

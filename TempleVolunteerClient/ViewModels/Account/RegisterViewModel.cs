@@ -97,5 +97,11 @@ namespace TempleVolunteerClient
         [Required]
         [Display(Name = "Accept Terms")]
         public bool AcceptTerms { get; set; }
+
+        [Required]
+        [Display(Name = "Temple")]
+        public int TemplePropertyId { get; set; }
+
+        public IList<SelectListItem>? TemplePropertyList { get; set; }
     }
 }

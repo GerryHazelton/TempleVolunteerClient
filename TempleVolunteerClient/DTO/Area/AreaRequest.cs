@@ -1,5 +1,5 @@
 ﻿
-using TempleVolunteerClient.Common;
+using TempleVolunteerClient;
 
 namespace TempleVolunteerClient
 {

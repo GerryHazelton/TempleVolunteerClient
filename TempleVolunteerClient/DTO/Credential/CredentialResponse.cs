@@ -1,7 +1,6 @@
 ﻿using System;
-using TempleVolunteerClient;
 
-namespace VolunteerAPI.Domain
+namespace TempleVolunteerClient
 {
     public class CredentialResponse : BaseResponse
     {

@@ -59,7 +59,7 @@ namespace TempleVolunteerClient
             {
                 if (ModelState.IsValid)
                 {
-                    var applicationUser = new RegisterViewModel
+                    var newVolunteer = new RegisterRequest
                     {
                         FirstName = viewModel.FirstName,
                         LastName = viewModel.LastName,
@@ -78,13 +78,13 @@ namespace TempleVolunteerClient
                         Kriyaban = viewModel.Kriyaban,
                         LessonStudent = viewModel.LessonStudent,
                         AcceptTerms = true,
+                        PropertyId = viewModel.TemplePropertyId
                     };
 
                     using (HttpClient client = new HttpClient())
                     {
                         var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                         client.DefaultRequestHeaders.Accept.Add(contentType);
-
                         HttpResponseMessage staffResponse = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync", this.Uri));
                         string stringData = staffResponse.Content.ReadAsStringAsync().Result;
                         ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
@@ -100,7 +100,7 @@ namespace TempleVolunteerClient
                             }
                         }
 
-                        stringData = JsonConvert.SerializeObject(applicationUser);
+                        stringData = JsonConvert.SerializeObject(newVolunteer);
                         var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
                         var response = await client.PostAsync(string.Format("{0}/Account/RegisterAsync", this.Uri), contentData);
 

@@ -1,4 +1,4 @@
-﻿namespace TempleVolunteerClient.Common
+﻿namespace TempleVolunteerClient
 {
     public class Audit
     {
@@ -8,6 +8,7 @@
         public DateTime? UpdatedDate { get; set; }
         public bool IsActive { get; set;}
         public bool IsHidden { get; set; }
+        public int PropertyId { get; set; }
 
         public Audit()
         {

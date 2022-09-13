@@ -1,7 +1,9 @@
 ﻿
+using TempleVolunteerClient.Common;
+
 namespace TempleVolunteerClient
 {
-    public class RegisterRequest
+    public class RegisterRequest : Audit
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

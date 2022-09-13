@@ -1,6 +1,4 @@
-﻿using TempleVolunteerClient.Common;
-
-namespace TempleVolunteerClient
+﻿namespace TempleVolunteerClient
 {
     public class EventRequest : Audit
     {
@@ -10,7 +8,6 @@ namespace TempleVolunteerClient
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string Note { get; set; }
-        public int PropertyId { get; set; }
         public ICollection<EventTypeRequest>? EventTypes { get; set; }
  
         public EventRequest()

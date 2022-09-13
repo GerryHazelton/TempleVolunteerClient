@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using TempleVolunteerClient.Common;
 using Newtonsoft.Json;
 using System.Data;
+using System.Text;
 
 namespace TempleVolunteerClient
 {
@@ -99,9 +100,17 @@ namespace TempleVolunteerClient
                         }
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Account/GetAllPropertiesAsync", this.Uri));
+                    string email = GetStringSession("EmailAddress");
+                    int propertyId = GetIntSession("PropertyId");
+                    
+                    MiscRequest misc = new MiscRequest();
+                    misc.UserId = !String.IsNullOrEmpty(email) ? email : "srfyssvolunteer@gmail.com";
+                    misc.PropertyId = propertyId > 0 ? propertyId : 0;
 
-                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    string stringData = JsonConvert.SerializeObject(misc);
+                    var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Account/GetAllPropertiesAsync", this.Uri));
+                    stringData = response.Content.ReadAsStringAsync().Result;
                     ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
                     IList<PropertyRequest> properties = JsonConvert.DeserializeObject<IList<PropertyRequest>>(data.Data.ToString());
 

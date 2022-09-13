@@ -1,6 +1,4 @@
-﻿using TempleVolunteerClient.Common;
-
-namespace TempleVolunteerClient
+﻿namespace TempleVolunteerClient
 {
     public class CategoryRequest : Audit
     {
