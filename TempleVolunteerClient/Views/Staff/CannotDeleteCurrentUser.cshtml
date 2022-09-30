@@ -1,13 +1,13 @@
-﻿<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static" data-keyboard="false">
+﻿<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static"  data-keyboard="false">
     <div style="height:50px"></div>
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
-                You cannot delete yourself.
+                Current logged-in user cannot delete itself.
             </div>
-                <div class="col-3">
-                    <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Staff")'" />
-                </div>
+            <div class="col-3">
+                <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Staff")'" />
+            </div>
             <div>&nbsp;</div>
         </div>
     </div>

@@ -1,0 +1,36 @@
+﻿<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static"  data-keyboard="false">
+    <div style="height:50px"></div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body" style="word-wrap:break-word">
+                @TempData["ModalMessage"]
+            </div>
+            @if (
+            TempData["ModalMessage"].ToString().IndexOf("Unable to login") >= 0 ||
+            TempData["ModalMessage"].ToString().IndexOf("Unable to register") >= 0 ||
+            TempData["ModalMessage"].ToString().IndexOf("Error occurred") >= 0
+          )
+            {
+                <div class="col-3">
+                    <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Home")'" />
+                </div>
+            }
+            else
+            {
+                <div class="col-3">
+                    <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Staff")'" />
+                </div>
+            }
+            <div>&nbsp;</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#showMessage").modal('show');
+            $(".container").css('background-color', 'transparent');
+        });
+    </script> 
+}

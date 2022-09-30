@@ -72,7 +72,7 @@ namespace TempleVolunteerClient
 
         protected int GetIntSession(string key)
         {
-            return (int)HttpContext.Session.GetInt32(key.ToString());
+            return HttpContext.Session.GetInt32(key.ToString()) == null ? 0 : (int)HttpContext.Session.GetInt32(key.ToString());
         }
 
         protected int GetPropertyId()
@@ -101,15 +101,17 @@ namespace TempleVolunteerClient
                     }
 
                     string email = GetStringSession("EmailAddress");
-                    int propertyId = GetIntSession("PropertyId");
+                    int? propertyId = GetIntSession("PropertyId");
                     
                     MiscRequest misc = new MiscRequest();
                     misc.UserId = !String.IsNullOrEmpty(email) ? email : "srfyssvolunteer@gmail.com";
-                    misc.PropertyId = propertyId > 0 ? propertyId : 0;
+                    misc.PropertyId = (int)((propertyId == null || propertyId > 0) ? propertyId : 0);
+                    misc.DeleteById = 0;
+                    misc.GetById = 0;
 
                     string stringData = JsonConvert.SerializeObject(misc);
                     var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Account/GetAllPropertiesAsync", this.Uri));
+                    HttpResponseMessage response = await client.PostAsync(string.Format("{0}/Account/GetAllPropertiesAsync", this.Uri), contentData);
                     stringData = response.Content.ReadAsStringAsync().Result;
                     ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
                     IList<PropertyRequest> properties = JsonConvert.DeserializeObject<IList<PropertyRequest>>(data.Data.ToString());

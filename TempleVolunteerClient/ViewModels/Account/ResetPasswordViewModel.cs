@@ -8,13 +8,12 @@ namespace TempleVolunteerClient
         public string? Token { get; set; }
 
         [Required]
-        [StringLength(30, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Old Password")]
         public string? OldPassword { get; set; }
 
         [Required]
-        [StringLength(30, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 8)]
+        [StringLength(8, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "New Password")]
         public string? Password { get; set; }
@@ -26,5 +25,7 @@ namespace TempleVolunteerClient
 
         [Display(Name = "Property")]
         public int PropertyId { get; set; }
+
+        public bool ForgotPassword { get; set; }
     }
 }

@@ -1,13 +1,13 @@
-﻿<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static" data-keyboard="false">
+﻿<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static"  data-keyboard="false">
     <div style="height:50px"></div>
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
-                Please inform tech support that the server is down. Contact Gerry at: 760.670.8026.
+                Must create at least one Role before creating Staff.
             </div>
-                <div class="col-3">
-                    <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Home")'" />
-                </div>
+            <div class="col-3">
+                <input type="button" value="OK" onclick="location.href='@Url.Action("Main", "Account")'" />
+            </div>
             <div>&nbsp;</div>
         </div>
     </div>
@@ -21,4 +21,3 @@
         });
     </script> 
 }
-

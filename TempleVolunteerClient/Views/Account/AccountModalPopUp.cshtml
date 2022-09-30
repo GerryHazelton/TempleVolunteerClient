@@ -2,11 +2,11 @@
     <div style="height:50px"></div>
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-body">
+            <div class="modal-body" style="word-wrap:break-word">
                 @TempData["ModalMessage"]
             </div>
             <div class="col-3 offset-1">
-                <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Home")'" />
+                <input type="button" value="OK" onclick="location.href='@Url.Action("Login", "Account")'" />
             </div>
             <div>&nbsp;</div>
         </div>

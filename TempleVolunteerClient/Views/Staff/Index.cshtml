@@ -1,0 +1,118 @@
+﻿@model StaffViewModel
+
+<br />
+<div class="container row p-0 m-0">
+    <div class="col-6">
+        <h2 class="text-info">Manage Staff</h2>
+    </div>
+    <div class="col-3 offset-3">
+        <a asp-action="StaffUpsert" asp-controller="Staff" class="btn btn-info form-control text-white">
+            Add New Staff&nbsp;@Html.ActionLink("Return To Main Menu", "Main", "Account")
+        </a>
+    </div>
+    <div class="col-12 border p-3">
+        <table id="staffTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Role</th>
+                    <th>City</th>
+                    <th>Active</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="staffModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Staff Details</h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <span class='img-65'><img id="staffImage" src="" /></span>
+                </div>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Staff ID:</label>&nbsp;<span id="staffId"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">First Name:</label>&nbsp;<span id="staffFirstName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Last Name:</label>&nbsp;<span id="staffLastName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Address:</label>&nbsp;<span id="staffAddress"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Address2:</label>&nbsp;<span id="staffAddress2"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">City:</label>&nbsp;<span id="staffCity"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">State:</label>&nbsp;<span id="staffState"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Postal Code:</label>&nbsp;<span id="staffPostalCode"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Country:</label>&nbsp;<span id="staffCountry"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Email Address:</label>&nbsp;<span id="staffEmailAddress"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Phone Number:</label>&nbsp;<span id="staffPhoneNumber"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Gender:</label>&nbsp;<span id="staffGender"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Role:</label>&nbsp;<span id="staffRole"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Lesson Student:</label>&nbsp;<span id="staffLessonStudent"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Kriyaban:</label>&nbsp;<span id="staffKriyaban"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Trained In First Aid:</label>&nbsp;<span id="staffFirstAid"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Trainied In CPR:</label>&nbsp;<span id="staffCPR"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Notes:</label>&nbsp;<span id="staffNotes"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Can Schedule:</label>&nbsp;<span id="staffCanSchedule"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Can Order Supplies:</label>&nbsp;<span id="staffCanOrderSupplies"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Can View Reports:</label>&nbsp;<span id="staffCanViewReports"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Can Send Messages:</label>&nbsp;<span id="staffCanSendMessages"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Verified:</label>&nbsp;<span id="staffIsVerified"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Verified Date:</label>&nbsp;<span id="staffVerifiedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="staffIsActive"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created Date:</label>&nbsp;<span id="staffCreatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created By:</label>&nbsp;<span id="staffCreatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated Date:</label>&nbsp;<span id="staffUpdatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated By:</label>&nbsp;<span id="staffUpdatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">File Name:</label>&nbsp;<span id="staffFileName"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script id="staffListId" src="~/js/Staff/staffList.js" logged-in-user=@Model.LoggedInStaff></script>
+    <script>
+        $(document).ready(function () {
+            //document.querySelector("#staffId").onclick = function (e) {
+            //    e.preventDefault();
+            //}
+        });
+    </script>
+}
+

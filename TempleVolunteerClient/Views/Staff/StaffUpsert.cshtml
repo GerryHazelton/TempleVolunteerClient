@@ -1,0 +1,342 @@
+﻿@model StaffViewModel
+
+@{
+    Model.StaffPrevImage = Model.StaffImage;
+}
+
+<br />
+<h2 class="text-info">@(Model.StaffId != 0 ? "Edit" : "Create") Staff</h2>
+<br />
+
+<div class="border container" style="padding:30px;">
+    @using (@Html.BeginForm("StaffUpsert", "Staff", FormMethod.Post, new { id = "staffForm", enctype = "multipart/form-data" }))
+    {
+        @if (Model.StaffId != 0)
+        {
+            <input id="hiddenId" type="hidden" asp-for="@Model.StaffId" />
+            <input type="hidden" asp-for="@Model.CreatedBy" />
+            <input type="hidden" asp-for="@Model.CreatedDate" />
+            <input type="hidden" asp-for="@Model.UpdatedBy" />
+            <input type="hidden" asp-for="@Model.UpdatedDate" />
+            <input type="hidden" asp-for="@Model.StaffPrevImage" />
+            <input type="hidden" asp-for="@Model.IsVerified" />
+            <input type="hidden" asp-for="@Model.IsLockedOut" />
+            <input type="hidden" asp-for="@Model.LoginAttempts" />
+            <input type="hidden" asp-for="@Model.IsActive" />
+            <input type="hidden" asp-for="@Model.PasswordHash" />
+        }
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label id="firstName" style="color:blue" class="font-weight-bold" asp-for="FirstName"></label>
+            </div>
+            <div class="col-6">
+                <input id="firstNameId" asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="LastName" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="lastNameId" asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Address" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="addressId" asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Address2" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="Address2" class="form-control" />
+                <span asp-validation-for="Address2" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="City" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="State" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <select asp-for="State" asp-items="Model.States" class="form-control"></select>
+                <span asp-validation-for="State" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="PostalCode" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="PostalCode" class="form-control" />
+                <span asp-validation-for="PostalCode" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Country" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <select asp-for="Country" asp-items="Model.Countries" class="form-control"></select>
+                <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="EmailAddress" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="emailAddressId" asp-for="EmailAddress" class="form-control" />
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="PhoneNumber" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="phoneNumber" asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="RoleId" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <select asp-for="RoleId" asp-items="Model.RoleList" class="form-control"></select>
+                <span asp-validation-for="RoleId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Gender" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <select asp-for="Gender" asp-items="Model.GenderList" class="form-control"></select>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="FirstAid" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6 text-left">
+                <input asp-for="FirstAid" class="form-check" />
+                <span asp-validation-for="FirstAid" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="CPR" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6 text-left">
+                <input asp-for="CPR" class="form-check" />
+                <span asp-validation-for="CPR" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="LessonStudent" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="LessonStudent" class="form-check" />
+                <span asp-validation-for="LessonStudent" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Kriyaban" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="Kriyaban" class="form-check" />
+                <span asp-validation-for="Kriyaban" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Notes" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="Notes" class="form-control" />
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="CanOrderSupplies" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="CanOrderSupplies" class="form-check" />
+                <span asp-validation-for="CanOrderSupplies" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="CanViewReports" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="CanViewReports" class="form-check" />
+                <span asp-validation-for="CanViewReports" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="CanSendMessages" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="CanSendMessages" class="form-check" />
+                <span asp-validation-for="CanSendMessages" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="IsVerified" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="IsVerified" class="form-check" />
+                @*<span asp-validation-for="IsVerified" class="text-danger"></span>*@
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                @if (Model.IsLockedOut)
+                {
+                    <label asp-for="UnlockUser" style="color:blue" class="font-weight-bold"></label>
+                }
+                else
+                {
+                    <label asp-for="UnlockUser" style="color:lightgray" class="font-weight-bold"></label>
+                }
+            </div>
+            <div class="col-6">
+                @if (Model.IsLockedOut)
+                {
+                    <input asp-for="UnlockUser" class="form-check" />
+                }
+                else
+                {
+                    <input asp-for="UnlockUser" class="form-check" disabled />
+                }
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="StaffFileName" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="IsActive" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-1">
+                <input asp-for="IsActive" class="form-check" />
+                @*<span asp-validation-for="IsActive" class="text-danger"></span>*@
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <input id="imageFileId" asp-for="StaffImageFile" accept="image/x-png,image/gif,image/jpeg" />
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 offset-3">
+                <button type="submit" class="btn btn-primary form-control">
+                    @(Model.StaffId != 0 ? "Update" : "Create")
+                </button>
+            </div>
+            <div class="col-3">
+                <a asp-action="Index" asp-controller="Staff" class="btn btn-primary form-control">Retrun</a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            $(function () {
+                $("#firstNameId").focus();
+            });
+
+            $('#imageFileId').change(function () {
+                var filename = $('input[type=file]').val().split('\\').pop();
+                var lastIndex = filename.lastIndexOf("\\");
+                $('#fileNameId').val(filename);
+            });
+
+            $('#phoneNumber').keyup(function (e) {
+                var ph = this.value.replace(/\D/g, '').substring(0, 10);
+                var deleteKey = (e.keyCode == 8 || e.keyCode == 46);
+                var len = ph.length;
+                if (len == 0) {
+                    ph = ph;
+                } else if (len < 3) {
+                    ph = '(' + ph;
+                } else if (len == 3) {
+                    ph = '(' + ph + (deleteKey ? '' : ') ');
+                } else if (len < 6) {
+                    ph = '(' + ph.substring(0, 3) + ') ' + ph.substring(3, 6);
+                } else if (len == 6) {
+                    ph = '(' + ph.substring(0, 3) + ') ' + ph.substring(3, 6) + (deleteKey ? '' : '-');
+                } else {
+                    ph = '(' + ph.substring(0, 3) + ') ' + ph.substring(3, 6) + '-' + ph.substring(6, 10);
+                }
+                this.value = ph;
+            });
+
+            $("#staffForm").on("submit", function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/Staff/StaffGet/',
+                    type: 'GET',
+                    dataType: "json",
+                    success: validateData,
+                    error: function (result) {
+                        alert('error');
+                    }
+                });
+
+                function validateData(data) {
+                    let exists = false;
+                    $.each(data.data, function (i, item) {
+                        exists = ($("#emailAddressId").val().toLowerCase().trim() == item.emailAddress.toLowerCase().trim() &&
+                            (parseInt(item.staffId) != parseInt($("#hiddenId").val())));
+
+                        if (exists) {
+                            return false;
+                        }
+                    });
+
+                    if (exists) {
+                        swal("This staff already exists!", "");
+                    }
+                    else {
+                        $("#staffForm").unbind("submit").submit();
+                    }
+                };
+            });
+        });
+    </script>
+}

@@ -10,14 +10,20 @@ using Microsoft.Extensions.Options;
 using TempleVolunteerClient.Common;
 using System.IdentityModel.Tokens.Jwt;
 using TempleVolunteerClient;
+using AutoMapper;
 
 namespace TempleVolunteerClient
 {
     public class AccountController : CustomController
     {
-        public AccountController(IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> AppSettings)
+        private IWebHostEnvironment _environment;
+        private IMapper _mapper;
+
+        public AccountController(IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> AppSettings, IWebHostEnvironment environment, IMapper mapper)
             : base(httpContextAccessor, AppSettings)
         {
+            _environment = environment;
+            _mapper = mapper;
         }
 
         #region Register
@@ -128,6 +134,175 @@ namespace TempleVolunteerClient
         }
         #endregion
 
+        #region My Profile
+        [HttpGet]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> MyProfile()
+        {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+
+            MyProfileViewModel viewModel = new MyProfileViewModel();
+
+            try
+            {
+
+                using (HttpClient client = new HttpClient())
+                {
+                    MiscRequest request = new MiscRequest();
+                    request.PropertyId = this.GetIntSession("PropertyId");
+                    request.GetById = this.GetIntSession("StaffId");
+                    request.UserId = this.GetStringSession("EmailAddress");
+
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    string stringData = JsonConvert.SerializeObject(request);
+                    var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                    HttpResponseMessage response = client.PostAsync(string.Format("{0}/Staff/GetByIdAsync", this.Uri), contentData).Result;
+                    var responseDeserialized = JsonConvert.DeserializeObject<MyProfileResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
+
+                    if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occurred: MyProfile. Message: '{0}'. Please contact support.", response.RequestMessage);
+
+                        return RedirectPermanent("/Account/StaffModalPopUp");
+                    }
+
+                    var staff = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
+                    viewModel = _mapper.Map<MyProfileViewModel>(JsonConvert.DeserializeObject<StaffRequest>(staff.Data.ToString()));
+                    viewModel.GenderList = Common.ListHelpers.GenderList;
+                    viewModel.Countries = Common.ListHelpers.Countries;
+                    viewModel.States = Common.ListHelpers.States;
+                    
+                    if (viewModel.StaffImage.Length > 0)
+                    {
+                        viewModel.DisplayStaffImage = Convert.ToBase64String(viewModel.StaffImage);
+                    }
+                    else
+                    {
+                        viewModel.StaffImage = null;
+                    }
+                }
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+
+                return RedirectPermanent("/Account/AccountModalPopUp");
+            }
+        }
+
+        [HttpPost]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> MyProfile(MyProfileViewModel viewModel)
+        {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    bool updateImage = viewModel.StaffImageFile != null ? true : false;
+                    var myProfileRequest = _mapper.Map<MyProfileRequest>(viewModel);
+                    MemoryStream ms = null;
+
+                    if (updateImage)
+                    {
+                        string wwwRootPath = _environment.WebRootPath;
+                        string fileName = Path.GetFileNameWithoutExtension(viewModel.StaffImageFile.FileName);
+                        string extension = Path.GetExtension(viewModel.StaffImageFile.FileName);
+                        fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
+                        string path = Path.Combine(wwwRootPath + "\\img\\", fileName);
+                        FileStream fs = null;
+                        byte[] buffer = new byte[16 * 1024];
+
+                        using (fs = System.IO.File.Create(path))
+                        {
+                            await viewModel.StaffImageFile.CopyToAsync(fs);
+
+                            using (ms = new MemoryStream())
+                            {
+                                int read;
+                                fs.Position = 0;
+                                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                                {
+                                    ms.Write(buffer, 0, read);
+                                }
+                            }
+                        }
+
+                        System.IO.File.Delete(path);
+                    }
+                    else
+                    {
+                        if (viewModel.StaffImage != null)
+                        {
+                            viewModel.StaffPrevImage = viewModel.StaffImage;
+                        }
+                    }
+
+                    using (HttpClient client = new HttpClient())
+                    {
+                        if (!updateImage)
+                        {
+                            myProfileRequest.StaffFileName = viewModel.StaffFileName;
+                            myProfileRequest.StaffImage = viewModel.StaffPrevImage;
+                        }
+                        else
+                        {
+                            myProfileRequest.StaffFileName = viewModel.StaffImageFile.FileName;
+                            myProfileRequest.StaffImage = ms.ToArray();
+                        }
+
+                        myProfileRequest.UpdatedBy = GetStringSession("EmailAddress");
+                        myProfileRequest.UpdatedDate = DateTime.Now;
+                        myProfileRequest.EmailAddress = GetStringSession("EmailAddress");
+                        myProfileRequest.PropertyId = GetIntSession("PropertyId");
+                        var data = JsonConvert.SerializeObject(myProfileRequest);
+                        var content = new StringContent(data, Encoding.UTF8, this.ContentType);
+
+                        var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                        client.DefaultRequestHeaders.Accept.Add(contentType);
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                        if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                        {
+                            TempData["ModalMessage"] = string.Format("Error occurred: MyProfile: {0}. Bearer token is null. Please contact support.", this.GetStringSession("EmailAddress"));
+
+                            return RedirectPermanent("/Account/AccountModalPopUp");
+                        }
+
+                        HttpResponseMessage response = await client.PutAsync(string.Format("{0}/Account/MyProfileAsync", this.Uri), content);
+
+                        if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                        {
+                            TempData["ModalMessage"] = string.Format("Error occurred: MyProfile. Message: '{0}'. Please contact support.", response.RequestMessage);
+
+                            return RedirectPermanent("/Account/AccountModalPopUp");
+                        }
+
+                        TempData["ModalMessage"] = "Profile successfully updated";
+                    }
+                }
+                else
+                {
+                    return View(viewModel);
+                }
+
+                return RedirectPermanent("/Account/AccountModalPopUp");
+            }
+            catch (Exception ex)
+            {
+                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+
+                return RedirectPermanent("/Staff/StaffModalPopUp");
+            }
+        }
+        #endregion
+
         #region Login/Logout
         [HttpGet]
         [AllowAnonymous]
@@ -135,7 +310,8 @@ namespace TempleVolunteerClient
         {
             LoginViewModel viewModel = new LoginViewModel();
             viewModel.EmailAddress = "gerryhazelton@gmail.com";
-            viewModel.Password = "Mataji99#";
+            viewModel.Password = "11111111";
+            viewModel.TemplePropertyId = 1;
             viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
 
             return View(viewModel);
@@ -161,6 +337,7 @@ namespace TempleVolunteerClient
                         login.Password = viewModel.Password;
                         login.RememberMe = viewModel.RememberMe;
                         login.PropertyId = viewModel.TemplePropertyId;
+                        login.CreatedBy = viewModel.EmailAddress;
 
                         string stringData = JsonConvert.SerializeObject(login);
                         var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
@@ -233,45 +410,6 @@ namespace TempleVolunteerClient
             HttpContext.Session.Remove("token");
 
             return RedirectToAction("Index", "Home");
-        }
-        #endregion
-
-        #region Change Password
-        [HttpPost]
-        public async Task ChangePassword(string newPassword)
-        {
-            if (!IsAuthenticated())
-            {
-                throw new Exception("You are not authorized");
-            }
-
-            try
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-                    client.DefaultRequestHeaders.Accept.Add(contentType);
-
-                    ResetPasswordRequest resetPassword = new ResetPasswordRequest();
-                    resetPassword.EmailAddress = this.GetStringSession("EmailAddress");
-                    resetPassword.Token = this.GetStringSession("Token");
-                    resetPassword.NewPassword = newPassword;
-                    resetPassword.PropertyId = this.GetIntSession("PropertyId");
-
-                    var stringData = JsonConvert.SerializeObject(resetPassword);
-                    var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
-                    var response = await client.PostAsync(string.Format("{0}/Account/ResetPasswordAsync", this.Uri), contentData);
-                    var responseDeserialized = JsonConvert.DeserializeObject<ServiceResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
-
-                    if (!responseDeserialized.Success)
-                    {
-                    }
-                }
-            }
-            catch
-            {
-                throw;
-            }
         }
         #endregion
 
@@ -396,9 +534,64 @@ namespace TempleVolunteerClient
 
         [HttpGet]
         [AllowAnonymous]
+        public async Task<IActionResult> ResetForgottenPassword(string EmailAddress, int PropertyId, ResetForgottenPasswordViewModel viewModel = null)
+        {
+            if (String.IsNullOrEmpty(viewModel.Password))
+            {
+                var temples = await this.GetTempleProperties(true, false);
+                viewModel.EmailAddress = EmailAddress;
+                viewModel.PropertyId = PropertyId;
+                viewModel.TempleName = temples.First(x => x.Value == PropertyId.ToString()).Text;
+
+                return View(viewModel);
+            }
+
+            if (ModelState.IsValid)
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+
+                    ResetForgottenPasswordRequest resetPassword = new ResetForgottenPasswordRequest();
+                    resetPassword.EmailAddress = viewModel.EmailAddress;
+                    resetPassword.Password = viewModel.Password;
+                    resetPassword.PropertyId = viewModel.PropertyId;
+
+                    var stringData = JsonConvert.SerializeObject(resetPassword);
+                    var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
+                    var response = await client.PostAsync(string.Format("{0}/Account/ResetForgottenPasswordAsync", this.Uri), contentData);
+                    var responseDeserialized = JsonConvert.DeserializeObject<ServiceResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
+
+                    if (!responseDeserialized.Success)
+                    {
+                        TempData["ModalMessage"] = string.Format("{0} Please contact support.", responseDeserialized.Message);
+
+                        return RedirectPermanent("/Account/AccountModalPopUp");
+                    }
+                }
+
+                TempData["ModalMessage"] = "Your new password has been updated, you can now login";
+
+                return RedirectPermanent("/Account/AccountModalPopUp");
+            }
+            else
+            {
+                var temples = await this.GetTempleProperties(true, false);
+                viewModel.EmailAddress = EmailAddress;
+                viewModel.PropertyId = PropertyId;
+                viewModel.TempleName = temples.First(x => x.Value == PropertyId.ToString()).Text;
+
+                return View(viewModel);
+            }
+        }
+
+        [HttpGet]
         [AutoValidateAntiforgeryToken]
         public IActionResult ResetPassword()
         {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+
             ResetPasswordViewModel viewModel = new ResetPasswordViewModel();
             viewModel.EmailAddress = this.GetStringSession("EmailAddress");
             viewModel.Token = this.GetStringSession("Token");
@@ -407,10 +600,11 @@ namespace TempleVolunteerClient
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel viewModel)
         {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+
             try
             {
                 if (ModelState.IsValid)
@@ -425,7 +619,7 @@ namespace TempleVolunteerClient
                         resetPassword.Token = viewModel.Token;
                         resetPassword.OldPassword = viewModel.OldPassword;
                         resetPassword.NewPassword = viewModel.Password;
-                        resetPassword.PropertyId = viewModel.PropertyId;
+                        resetPassword.PropertyId = this.GetIntSession("PropertyId");
 
                         var stringData = JsonConvert.SerializeObject(resetPassword);
                         var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
@@ -435,6 +629,7 @@ namespace TempleVolunteerClient
                         if (!responseDeserialized.Success)
                         {
                             TempData["ModalMessage"] = string.Format("{0} Please contact support.", responseDeserialized.Message);
+
                             return RedirectPermanent("/Account/AccountModalPopUp");
                         }
                     }
