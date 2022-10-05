@@ -4,35 +4,17 @@ namespace TempleVolunteerClient.Common
 {
     public static class ListHelpers
     {
-        public enum ManageMessage
+        public enum ModalType
         {
-            AddPhoneSuccess = 1,
-            ChangePasswordSuccess,
-            SetTwoFactorSuccess,
-            SetPasswordSuccess,
-            RemoveLoginSuccess,
-            RemovePhoneSuccess,
-            PersonalInfoSuccess,
-            UsernameSuccess,
-            Error
-        }
-
-        public enum ErrorType
-        {
-            Create = 1,
-            Edit,
-            Delete,
-            Index
-        }
-
-        public enum ContentType
-        {
-            Doc = 1,
-            Docx = 2,
-            Pdf = 3,
-            Jpg = 4,
-            Gif = 5,
-            Png = 6
+            Area,
+            Document,
+            Error,
+            Event,
+            EventTask,
+            ForgotPassword,
+            Home,
+            Login,
+            Profile
         }
 
         static public List<SelectListItem> GenderList { get; } = new List<SelectListItem>

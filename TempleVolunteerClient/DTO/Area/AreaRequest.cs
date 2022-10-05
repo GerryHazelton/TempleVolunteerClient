@@ -9,13 +9,7 @@ namespace TempleVolunteerClient
         public string Name { get; set; }
         public string Description { get; set; }
         public string Note { get; set; }
-
         public bool SupplyItemsAllowed { get; set; }
-        public ICollection<SupplyItemRequest> SupplyItems { get; set; }
-
-        public AreaRequest()
-        {
-            this.SupplyItems = new HashSet<SupplyItemRequest>();
-        }
+        public int[] SupplyItemIds { get; set; }
     }
 }

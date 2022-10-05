@@ -19,7 +19,7 @@ namespace TempleVolunteerClient
         public bool LessonStudent { get; set; }
         public string EmailAddress { get; set; }
         public int PropertyId { get; set; }
-        public string? StaffFileName { get; set; }
-        public byte[]? StaffImage { get; set; }
+        public string? StaffImageFileName { get; set; }
+        public string? StaffImage { get; set; }
     }
 }

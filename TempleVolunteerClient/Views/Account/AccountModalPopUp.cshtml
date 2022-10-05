@@ -1,4 +1,7 @@
-﻿<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static" data-keyboard="false">
+﻿@using static TempleVolunteerClient.Common.ListHelpers
+@model TempleVolunteerClient.ModalViewModel
+
+<div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static" data-keyboard="false">
     <div style="height:50px"></div>
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -6,7 +9,22 @@
                 @TempData["ModalMessage"]
             </div>
             <div class="col-3 offset-1">
-                <input type="button" value="OK" onclick="location.href='@Url.Action("Login", "Account")'" />
+
+                @switch(Model.ModalType) 
+                {
+                    case ModalType.Error:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("Logout", "Account")'" />
+                        break;
+                    case ModalType.ForgotPassword:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("ForgotPassword", "Account")'" />
+                        break;
+                    case ModalType.Home:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Home")'" />
+                        break;
+                    case ModalType.Profile:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("MyProfile", "Account")'" />
+                    break;
+                }
             </div>
             <div>&nbsp;</div>
         </div>

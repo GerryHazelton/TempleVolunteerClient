@@ -6,6 +6,9 @@ namespace TempleVolunteerClient
     {
         public MappingProfile()
         {
+            CreateMap<AreaViewModel, AreaRequest>();
+            CreateMap<AreaRequest, AreaViewModel>();
+
             CreateMap<MyProfileViewModel, MyProfileRequest>();
             CreateMap<MyProfileRequest, MyProfileViewModel>();
 

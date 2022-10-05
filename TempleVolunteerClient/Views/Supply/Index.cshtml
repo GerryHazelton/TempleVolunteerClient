@@ -1,0 +1,74 @@
+﻿@model SupplyViewModel
+
+@{
+
+}
+
+<br />
+<div class="container row p-0 m-0">
+    <div class="col-6">
+        <h2 class="text-info">Manage Supplies</h2>
+    </div>
+    <div class="col-3 offset-3">
+        <a asp-action="SupplyUpsert" asp-controller="Supply" class="btn btn-info form-control text-white">
+            Add
+        </a>
+    </div>
+    <div class="col-12 border p-3">
+        <table id="supplyTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="supplyModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Supply Details</h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <span class='img-65'><img id="supplyImage" src="" /></span>
+                </div>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Supply ID:</label>&nbsp;<span id="supplyId"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="supplyIsActive"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Hidden:</label>&nbsp;<span id="supplyIsHidden"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created Date:</label>&nbsp;<span id="supplyCreatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created By:</label>&nbsp;<span id="supplyCreatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated Date:</label>&nbsp;<span id="supplyUpdatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated By:</label>&nbsp;<span id="supplyUpdatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">File Name:</label>&nbsp;<span id="supplyFileName"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script id="supplyListId" src="~/js/Supply/supplyList.js"></script>
+    <script>
+        $(document).ready(function () {
+            //document.querySelector("#supplyId").onclick = function (e) {
+            //    e.preventDefault();
+            //}
+        });
+    </script>
+}
+

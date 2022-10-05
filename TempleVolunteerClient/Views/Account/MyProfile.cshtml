@@ -4,6 +4,7 @@
     <form name="myProfileForm" method="post" asp-controller="Account" asp-action="MyProfile" enctype="multipart/form-data">
 
         <input type="hidden" asp-for="@Model.StaffPrevImage" />
+        <input type="hidden" asp-for="@Model.StaffFileName" />
 
         <div class="text-danger" asp-validation-summary="ModelOnly"></div>
         <div class="form-group row" style="margin-bottom:10px">
@@ -130,7 +131,7 @@
             </div>
             <div class="form-group row">
                 <div class="col-84">
-                    <img id="profileImageId" width="150px" height="100px" />
+                    <img src="data:image/png;base64,@Html.DisplayFor(model => model.StaffPrevImage)" height="150" width="100">
                 </div>
              </div>
         </div>
@@ -144,7 +145,7 @@
         </div>
         <div class="form-group row">
             <div class="col-3 text-right">
-                <input type="file" asp-for="StaffImageFile" accept="image/x-png,image/gif,image/jpeg" />
+                <input type="file" name="staffImageFile" asp-for="StaffImageFile" accept="image/x-png,image/gif,image/jpeg" />
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px">
@@ -161,9 +162,6 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function () {
-            
-            $("#profileImageId").attr('src', "data:image/png;base64," + @Model.StaffImage);
-
             $('#phoneNumber').keyup(function (e) {
                 var ph = this.value.replace(/\D/g, '').substring(0, 10);
                 var deleteKey = (e.keyCode == 8 || e.keyCode == 46);

@@ -77,13 +77,15 @@ namespace TempleVolunteerClient
         public bool LessonStudent { get; set; }
 
         public string? EmailAddress { get; set; }
+
         public int? PropertyId { get; set; }
-        
+
+        public IFormFile? StaffImageFile { get; set; }
+
         [Display(Name = "File Name")]
         public string? StaffFileName { get; set; }
-        public IFormFile? StaffImageFile { get; set; }
-        public byte[]? StaffPrevImage { get; set; }
-        public byte[]? StaffImage { get; set; }
-        public string? DisplayStaffImage { get; set; }
+
+        public string? StaffImage { get; set; }
+        public string? StaffPrevImage { get; set; }
     }
 }

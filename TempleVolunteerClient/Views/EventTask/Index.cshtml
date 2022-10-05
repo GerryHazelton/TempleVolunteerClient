@@ -1,0 +1,69 @@
+﻿@model EventTaskViewModel
+
+@{
+
+}
+
+<br />
+<div class="container row p-0 m-0">
+    <div class="col-6">
+        <h2 class="text-info">Manage Event Types (coming soon...)</h2>
+    </div>
+    <div class="col-3 offset-3">
+        <a asp-action="EventTaskUpsert" asp-controller="EventTask" class="btn btn-info form-control text-white">
+            Add
+        </a>
+    </div>
+    <div class="col-12 border p-3">
+        <table id="eventTaskTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="eventTaskModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">EventTask Details</h3>
+            </div>
+            <div class="modal-body">
+                <br />
+                <label style="color:blue" class="font-weight-bold">EventTask ID:</label>&nbsp;<span id="eventTaskId"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Name:</label>&nbsp;<span id="eventTaskName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="eventTaskIsActive"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Hidden:</label>&nbsp;<span id="eventTaskIsHidden"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created Date:</label>&nbsp;<span id="eventTaskCreatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created By:</label>&nbsp;<span id="eventTaskCreatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated Date:</label>&nbsp;<span id="eventTaskUpdatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated By:</label>&nbsp;<span id="eventTaskUpdatedBy"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script id="eventTaskListId" src="~/js/EventTask/eventTaskList.js"></script>
+    <script>
+        $(document).ready(function () {
+            //document.querySelector("#eventTaskAdd").onclick = function (e) {
+            //    e.preventTaskDefault();
+            //}
+        });
+    </script>
+}

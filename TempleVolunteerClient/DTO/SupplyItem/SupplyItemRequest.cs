@@ -1,4 +1,6 @@
-﻿namespace TempleVolunteerClient
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace TempleVolunteerClient
 {
     public class SupplyItemRequest : Audit
     {
@@ -10,5 +12,10 @@
         public string BinNumber { get; set; }
         public string SupplyItemFileName { get; set; }
         public byte[]? SupplyItemImage { get; set; }
+
+        public static explicit operator SupplyItemRequest(RedirectResult v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

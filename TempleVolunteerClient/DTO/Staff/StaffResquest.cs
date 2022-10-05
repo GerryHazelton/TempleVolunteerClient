@@ -25,8 +25,8 @@
         public bool CanOrderSupplyItems { get; set; }
         public bool CanViewReports { get; set; }
         public bool CanSendMessages { get; set; }
-        public string StaffFileName { get; set; }
-        public byte[]? StaffImage { get; set; }
+        public string? StaffImageFileName { get; set; }
+        public string? StaffImage { get; set; }
         public bool IsVerified { get; set; }
         public DateTime? VerifiedDate { get; set; }
         public bool RememberMe { get; set; }

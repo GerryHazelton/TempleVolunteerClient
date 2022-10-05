@@ -1,0 +1,69 @@
+﻿@model RoleViewModel
+
+@{
+
+}
+
+<br />
+<div class="container row p-0 m-0">
+    <div class="col-6">
+        <h2 class="text-info">Manage Roles (coming soon...)</h2>
+    </div>
+    <div class="col-3 offset-3">
+        <a asp-action="RoleUpsert" asp-controller="Role" class="btn btn-info form-control text-white">
+            Add
+        </a>
+    </div>
+    <div class="col-12 border p-3">
+        <table id="roleTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="roleModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Role Details</h3>
+            </div>
+            <div class="modal-body">
+                <br />
+                <label style="color:blue" class="font-weight-bold">Role ID:</label>&nbsp;<span id="roleId"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Name:</label>&nbsp;<span id="roleName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="roleIsActive"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Hidden:</label>&nbsp;<span id="roleIsHidden"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created Date:</label>&nbsp;<span id="roleCreatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created By:</label>&nbsp;<span id="roleCreatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated Date:</label>&nbsp;<span id="roleUpdatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated By:</label>&nbsp;<span id="roleUpdatedBy"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script id="roleListId" src="~/js/Role/roleList.js"></script>
+    <script>
+        $(document).ready(function () {
+            //document.querySelector("#roleAdd").onclick = function (e) {
+            //    e.preventDefault();
+            //}
+        });
+    </script>
+}

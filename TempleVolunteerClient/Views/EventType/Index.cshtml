@@ -1,0 +1,69 @@
+﻿@model EventTypeViewModel
+
+@{
+
+}
+
+<br />
+<div class="container row p-0 m-0">
+    <div class="col-6">
+        <h2 class="text-info">Manage Event Types (coming soon...)</h2>
+    </div>
+    <div class="col-3 offset-3">
+        <a asp-action="EventTypeUpsert" asp-controller="EventType" class="btn btn-info form-control text-white">
+            Add
+        </a>
+    </div>
+    <div class="col-12 border p-3">
+        <table id="eventTypeTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="eventTypeModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">EventType Details</h3>
+            </div>
+            <div class="modal-body">
+                <br />
+                <label style="color:blue" class="font-weight-bold">EventType ID:</label>&nbsp;<span id="eventTypeId"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Name:</label>&nbsp;<span id="eventTypeName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="eventTypeIsActive"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Hidden:</label>&nbsp;<span id="eventTypeIsHidden"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created Date:</label>&nbsp;<span id="eventTypeCreatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created By:</label>&nbsp;<span id="eventTypeCreatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated Date:</label>&nbsp;<span id="eventTypeUpdatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated By:</label>&nbsp;<span id="eventTypeUpdatedBy"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script id="eventTypeListId" src="~/js/EventType/eventTypeList.js"></script>
+    <script>
+        $(document).ready(function () {
+            //document.querySelector("#eventTypeAdd").onclick = function (e) {
+            //    e.preventTypeDefault();
+            //}
+        });
+    </script>
+}
