@@ -64,7 +64,7 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = string.Format("Error occurred in AreaUpsert. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Area/ModalPopUp?type=" + ModalType.Error);
+                        return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
                     }
 
                     var area = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
@@ -88,6 +88,14 @@ namespace TempleVolunteerClient
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
+            if (!ModelState.IsValid)
+            {
+                viewModel.CreatedDate = DateTime.UtcNow;
+                viewModel.CreatedBy = GetStringSession("EmailAddress");
+                viewModel.PropertyId = GetIntSession("PropertyId");
+                viewModel.SupplyItems = await this.GetSupplyItemSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+            }
+
             try
             {
                 using (HttpClient client = new HttpClient())
@@ -101,7 +109,7 @@ namespace TempleVolunteerClient
                     if (viewModel.AreaId == 0)
                     {
                         var areaRequest = _mapper.Map<AreaRequest>(viewModel);
-                        string stringData = JsonConvert.SerializeObject(viewModel);
+                        string stringData = JsonConvert.SerializeObject(areaRequest);
                         var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PostAsync(string.Format("{0}/Area/PostAsync", this.Uri), contentData).Result;
                     }
@@ -118,7 +126,7 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = string.Format("Error occurred in AreaUpsert. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Area/ModalPopUp?type=" + ModalType.Error);
+                        return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
                     }
                 }
 
@@ -128,7 +136,7 @@ namespace TempleVolunteerClient
             {
                 TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
             };
         }
         #endregion
@@ -152,16 +160,16 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = "Error occuured in AreaGet. Bearer token is null. Please contact support.";
 
-                        return RedirectPermanent("/Area/ModalPopUp?type=" + ModalType.Error);
+                        return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
                     }
 
                     HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
-                        TempData["ModalMessage"] = string.Format("Error occurred: StaffGet(). Message: '{0}'. Please contact support.", response.RequestMessage);
+                        TempData["ModalMessage"] = string.Format("Error occuured in AreaGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Staff/StaffModalPopUp");
+                        return RedirectPermanent("/Area/StaffModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -174,15 +182,15 @@ namespace TempleVolunteerClient
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffGet(). Message: '{0}'. Please contact support.", ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occuured in AreaGet. Message: '{0}'. Please contact support.", ex.Message);
 
-                return RedirectPermanent("/Staff/StaffModalPopUp");
+                return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
             }
         }
 
         [HttpGet]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> StaffGetById(int staffId)
+        public async Task<IActionResult> AreaGetById(int staffId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -196,18 +204,18 @@ namespace TempleVolunteerClient
 
                     if (client.DefaultRequestHeaders.Authorization.Parameter == null)
                     {
-                        TempData["ModalMessage"] = string.Format("Error occurred: StaffGet(int staffId): {0}. Bearer token is null. Please contact support.", staffId);
+                        TempData["ModalMessage"] = string.Format("Error occuured in AreaGet. Bearer token is null. Please contact support.");
 
-                        return RedirectPermanent("/Staff/StaffModalPopUp");
+                        return RedirectPermanent("/Area/AreaModalPopUp");
                     }
 
                     HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
-                        TempData["ModalMessage"] = string.Format("Error occurred: StaffGet(int staffId): {0}. Message: '{1}'. Please contact support.", staffId, response.RequestMessage);
+                        TempData["ModalMessage"] = string.Format("Error occuured in AreaGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Staff/StaffModalPopUp");
+                        return RedirectPermanent("/Area/AreaModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -221,65 +229,55 @@ namespace TempleVolunteerClient
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffGet(int staffId): {0}. Message: '{1}'. Please contact support.", staffId, ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occuured in AreaGet. Message: '{0}'. Please contact support.", ex.Message);
 
-                return RedirectPermanent("/Staff/StaffModalPopUp");
+                return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
             }
         }
         #endregion
 
-        //[HttpDelete]
-        //public async Task<IActionResult> StaffDelete(int staffId)
-        //{
-        //    if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+        [HttpDelete]
+        public async Task<IActionResult> AreaDelete(int areaId, int propertyId)
+        {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
-        //    try
-        //    {
-        //        if (this.GetIntSession("StaffId") == staffId)
-        //        {
-        //            return RedirectPermanent("/Staff/CannotDeleteCurrentUser");
-        //        }
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occuured in AreaGet. Bearer token is null. Please contact support.");
 
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                TempData["ModalMessage"] = string.Format("Error occurred: StaffDelete(int staffId): {0}. Bearer token is null. Please contact support.", staffId);
+                        return RedirectPermanent("/Area/AreaModalPopUp");
+                    }
 
-        //                return RedirectPermanent("/Staff/StaffModalPopUp");
-        //            }
+                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Area/DeleteAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, areaId, propertyId, GetStringSession("EmailAddress")));
 
-        //            HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Staff/DeleteAsync?id={1}&userId='{2}'", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occurred in AreaDelete. Please contact support.");
 
-        //            if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
-        //            {
-        //                TempData["ModalMessage"] = string.Format("Error occurred: StaffDelete(int staffId): {0}. Message: '{1}'. Please contact support.", staffId, response.RequestMessage);
+                        return RedirectPermanent("/Area/AreaModalPopUp");
+                    }
+                }
 
-        //                return RedirectPermanent("/Staff/StaffModalPopUp");
-        //            }
-        //        }
+                return Json(new { success = true, message = "Delete successful" });
+            }
+            catch (Exception ex)
+            {
+                TempData["ModalMessage"] = string.Format("Error occurred in AreaDelete. Message: '{0}'. Please contact support.", ex.Message);
 
-        //        return Json(new { success = true, message = "Delete successful" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        TempData["ModalMessage"] = string.Format("Error occurred: StaffDelete(int staffId): {0}. Message: '{1}'. Please contact support.", staffId, ex.Message);
-
-        //        return RedirectPermanent("/Staff/StaffModalPopUp");
-        //    }
-        //}
-
-
-
-
-
+                return RedirectPermanent("/Area/AreaModalPopUp");
+            }
+        }
 
         #region Helpers
-        public IActionResult ModalPopUp(ModalType type)
+        public IActionResult AreaModalPopUp(ModalType type)
         {
             ModalViewModel viewModel = new ModalViewModel { ModalType = type };
 

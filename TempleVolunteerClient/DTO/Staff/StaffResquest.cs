@@ -35,11 +35,7 @@
         public bool UnlockUser { get; set; }
         public string Password { get; set; }
         public string PasswordSalt { get; set; }
-        public ICollection<RoleRequest> Roles { get; set; }
-
-        public StaffRequest()
-        {
-            this.Roles = new HashSet<RoleRequest>();
-        }
+        public int[] CredentialIds { get; set; }
+        public int[] RoleIds { get; set; }
     }
 }
