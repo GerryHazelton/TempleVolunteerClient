@@ -1,0 +1,137 @@
+﻿@using TempleVolunteerClient
+@model AreaViewModel
+
+<br />
+<h2 class="text-info">@(Model.AreaId != 0 ? "Edit" : "Create") Area</h2>
+<br />
+
+<div class="border container" style="padding:30px;">
+    @using (@Html.BeginForm("Upsert", "Area", FormMethod.Post, new { id = "areaForm" }))
+    {
+        <input type="hidden" asp-for="@Model.PropertyId" />
+
+        @if (Model.AreaId != 0)
+        {
+            <input type="hidden" asp-for="@Model.AreaId" />
+            <input type="hidden" asp-for="@Model.UpdatedBy" />
+            <input type="hidden" asp-for="@Model.UpdatedDate" />
+        }
+        else
+        {
+            <input type="hidden" asp-for="@Model.CreatedBy" />
+            <input type="hidden" asp-for="@Model.CreatedDate" />
+        }
+
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Name" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="nameId" idVal="@Model.AreaId" asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Description" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="Note" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input asp-for="Note" class="form-control" />
+                <span asp-validation-for="Note" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="IsActive" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-1">
+                <input asp-for="IsActive" class="form-check" />
+                <span asp-validation-for="IsActive" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="IsHidden" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-1">
+                <input asp-for="IsHidden" class="form-check" />
+                <span asp-validation-for="IsHidden" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="SupplyItems" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-1">
+                @Html.ListBoxFor(m => m.SupplyItemIds, Model.SupplyItems, new { @class = "listbox" })
+            </div>
+        </div>
+        <br />
+        <div class="form-group row">
+            <div class="col-3 offset-3">
+                <button id="buttonId" type="submit" class="btn btn-primary form-control">
+                    @(Model.AreaId != 0 ? "Update" : "Create")
+                </button>
+            </div>
+            <div class="col-3">
+                <a asp-action="Index" asp-controller="Area" class="btn btn-primary form-control">Retrun</a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts{    
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+<script>
+    $(document).ready(function () {
+        $('.listbox').multiselect({
+            includeSelectAllOption: true
+        });
+        
+        $("#nameId").focus();
+
+        $("#areaForm").on("submit", function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '/Area/AreaGet/',
+                type: 'GET',
+                dataType: "json",
+                success: validateData,
+                error: function (result) {
+                    alert('error');
+                }
+            });
+
+            function validateData(data) {
+                let exists = false;
+                $.each(data.data, function (i, item) {
+                    exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() &&
+                        (parseInt(item.areaId) != parseInt($("#hiddenId").val())));
+
+                    if (exists) {
+                        return false;
+                    }
+                });
+
+                if (exists) {
+                    swal("This area already exists!", "");
+                }
+                else {
+                    $("#areaForm").unbind("submit").submit();
+                }
+            };
+        });
+    });
+</script>
+}

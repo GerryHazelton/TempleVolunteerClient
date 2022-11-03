@@ -1,0 +1,68 @@
+﻿@model CommitteeViewModel
+
+@{
+
+}
+
+<br />
+<div class="container row p-0 m-0">
+    <div class="col-6">
+        <h2 class="text-info">Manage Committees (coming soon...)</h2>
+    </div>
+    <div class="col-3 offset-3">
+        <a asp-action="Upsert" asp-controller="Committee" class="btn btn-info form-control text-white">
+            Add
+        </a>
+    </div>
+    <div class="col-12 border p-3">
+        <table id="committeeTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="committeeModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-info">Committee Details</h3>
+            </div>
+            <div class="modal-body">
+                <label style="color:blue" class="font-weight-bold">Committee ID:</label>&nbsp;<span id="committeeId"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Name:</label>&nbsp;<span id="committeeName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="committeeIsActive"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Is Hidden:</label>&nbsp;<span id="committeeIsHidden"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created Date:</label>&nbsp;<span id="committeeCreatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Created By:</label>&nbsp;<span id="committeeCreatedBy"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated Date:</label>&nbsp;<span id="committeeUpdatedDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Updated By:</label>&nbsp;<span id="committeeUpdatedBy"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script id="committeeListId" src="~/js/Committee/committeeList.js"></script>
+    <script>
+        $(document).ready(function () {
+            //document.querySelector("#committeeId").onclick = function (e) {
+            //    e.preventDefault();
+            //}
+        });
+    </script>
+}

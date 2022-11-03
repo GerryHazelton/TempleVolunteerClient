@@ -507,7 +507,87 @@ namespace TempleVolunteerClient
         #endregion
 
         #region Areas
-        //protected async Task<IList<Area>> GetCustomAreas()
+        protected async Task<IList<AreaRequest>> GetAreas(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<AreaRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<AreaRequest>>(data.Data.ToString());
+
+                    IList<AreaRequest> selectItems = new List<AreaRequest>();
+
+                    foreach (AreaRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new AreaRequest() { AreaId = item.AreaId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetAreaSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Area/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<AreaRequest> items = JsonConvert.DeserializeObject<IList<AreaRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (AreaRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.AreaId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        //protected async Task<AreaRequest> GetAreaItem(int id, int propertyId, string userId)
         //{
         //    try
         //    {
@@ -519,128 +599,19 @@ namespace TempleVolunteerClient
 
         //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
         //            {
-        //                throw new Exception("Bearer token is null");
+        //                TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+        //                return RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
         //            }
 
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Area/GetAllAsync", this.Uri));
+        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetByIdAsync?id={1}&propertyId={2}&UserId='{3}", id, propertyId, userId));
 
         //            string stringData = response.Content.ReadAsStringAsync().Result;
         //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Area> areas = JsonConvert.DeserializeObject<IList<Area>>(data.Data.ToString());
+        //            var item = JsonConvert.DeserializeObject<IList<AreaRequest>>(data.Data.ToString());
 
-        //            return (IList<Area>)areas.Select(x => x.IsActive == true);
+        //            return (AreaRequest)item;
         //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<IList<SelectListItem>> GetCustomAreas(int areaId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Area/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Area> areas = JsonConvert.DeserializeObject<IList<Area>>(data.Data.ToString());
-
-        //            IList<SelectListItem> selectItems = new List<SelectListItem>();
-        //            foreach (Area? area in areas)
-        //            {
-        //                if (area.IsActive != true)
-        //                {
-        //                    continue;
-        //                }
-
-        //                if (area.AreaId == areaId)
-        //                {
-        //                    selectItems.Add(new SelectListItem(area.Name, area.AreaId.ToString(), true));
-        //                }
-        //                else
-        //                {
-        //                    selectItems.Add(new SelectListItem(area.Name, area.AreaId.ToString()));
-        //                }
-        //            }
-
-        //            return selectItems;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<Area> GetCustomArea(int areaId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Area/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Area> areas = JsonConvert.DeserializeObject<IList<Area>>(data.Data.ToString());
-        //            Area returnArea = null;
-
-        //            foreach (Area? area in areas)
-        //            {
-        //                if (area.AreaId == areaId && area.IsActive == true)
-        //                {
-        //                    returnArea = area;
-        //                }
-        //            }
-
-        //            return returnArea;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<IList<SelectListItem>> GetCustomProgramEventAreas(IList<ProgramEventArea> programEventAreas, bool selected)
-        //{
-        //    try
-        //    {
-        //        var areas = await GetCustomAreas(0);
-        //        IList<SelectListItem> selectItems;
-
-        //        if (selected)
-        //        {
-        //            selectItems = (from a in areas where (from p in programEventAreas select p.AreaId.ToString()).Contains(a.Value) select a).ToList();
-        //        }
-        //        else
-        //        {
-        //            selectItems = (from a in areas where !(from p in programEventAreas select p.AreaId.ToString()).Contains(a.Value) select a).ToList();
-        //        }
-
-        //        return selectItems;
         //    }
         //    catch (Exception ex)
         //    {
