@@ -13,6 +13,8 @@ using TempleVolunteerClient;
 using AutoMapper;
 using static TempleVolunteerClient.Common.Permissions;
 using static TempleVolunteerClient.Common.ListHelpers;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Org.BouncyCastle.Bcpg;
 
 namespace TempleVolunteerClient
 {
@@ -32,7 +34,7 @@ namespace TempleVolunteerClient
         [HttpGet]
         [AllowAnonymous]
         [AutoValidateAntiforgeryToken]
-        public IActionResult Register(string? returnUrl = null)
+        public async Task<IActionResult?> Register(string? returnUrl = null)
         {
             RegisterViewModel viewModel = new RegisterViewModel();
             viewModel.GenderList = Common.ListHelpers.GenderList;
@@ -54,6 +56,7 @@ namespace TempleVolunteerClient
             viewModel.FirstAid = true;
             viewModel.AcceptTerms = true;
             ViewData["ReturnUrl"] = returnUrl;
+            viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
 
             return View(viewModel);
         }
@@ -93,7 +96,7 @@ namespace TempleVolunteerClient
                     {
                         var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                         client.DefaultRequestHeaders.Accept.Add(contentType);
-                        HttpResponseMessage staffResponse = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync", this.Uri));
+                        HttpResponseMessage staffResponse = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?propertyId={1}&userId='{2}'", this.Uri, viewModel.TemplePropertyId, viewModel.EmailAddress));
                         string stringData = staffResponse.Content.ReadAsStringAsync().Result;
                         ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
                         var allStaff = JsonConvert.DeserializeObject<List<StaffViewModel>>(data.Data.ToString());
@@ -104,7 +107,7 @@ namespace TempleVolunteerClient
                             {
                                 TempData["ModalMessage"] = "Email address is already registered.";
 
-                                return RedirectPermanent("/Account/ModalPopUp");
+                                return RedirectPermanent("/Account/AccountModalPopUp");
                             }
                         }
 
@@ -116,20 +119,20 @@ namespace TempleVolunteerClient
                         {
                             TempData["ModalMessage"] = "Unable to register user. Please contact support.";
 
-                            return RedirectPermanent("/Account/ModalPopUp");
+                            return RedirectPermanent("/Account/AccountModalPopUp");
                         }
                     }
 
                     TempData["ModalMessage"] = "Registration successfully completed.The administrative staff will review your registration and will send you an email shortly. Thank you.";
 
-                    return RedirectPermanent("/Account/ModalPopUp");
+                    return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
                 }
             }
             catch (Exception ex)
             {
                 TempData["ModalMessage"] = string.Format("Error occurred. Unable to register user: '{0}'. Please contact support.", ex.Message);
 
-                return RedirectPermanent("/Account/ModalPopUp");
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
             }
 
             return View(viewModel);
@@ -138,8 +141,7 @@ namespace TempleVolunteerClient
 
         #region My Profile
         [HttpGet]
-        [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> MyProfile()
+        public IActionResult MyProfile()
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -168,7 +170,7 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = string.Format("Error occurred: MyProfile. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Account/StaffModalPopUp");
+                        return RedirectPermanent("/Account/AccountModalPopUp");
                     }
 
                     var staff = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
@@ -183,14 +185,14 @@ namespace TempleVolunteerClient
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: Unable to view profile: {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
             }
         }
 
         [HttpPost]
-        [AutoValidateAntiforgeryToken]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> MyProfile(MyProfileViewModel viewModel)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
@@ -239,7 +241,7 @@ namespace TempleVolunteerClient
                         {
                             TempData["ModalMessage"] = string.Format("Error occurred: MyProfile: {0}. Bearer token is null. Please contact support.", this.GetStringSession("EmailAddress"));
 
-                            return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                            return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                         }
 
                         HttpResponseMessage response = await client.PutAsync(string.Format("{0}/Account/MyProfileAsync", this.Uri), content);
@@ -248,7 +250,7 @@ namespace TempleVolunteerClient
                         {
                             TempData["ModalMessage"] = string.Format("Error occurred: MyProfile. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                            return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                            return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                         }
 
                         TempData["ModalMessage"] = "Profile successfully updated";
@@ -259,13 +261,13 @@ namespace TempleVolunteerClient
                     return View(viewModel);
                 }
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Profile);
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Profile);
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: Unable to view profile: {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
-                return RedirectPermanent("/Staff/StaffModalPopUp");
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
             }
         }
         #endregion
@@ -315,7 +317,7 @@ namespace TempleVolunteerClient
                         {
                             TempData["ModalMessage"] = string.Format("{0}", responseDeserialized.Message);
 
-                            return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                            return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                         }
 
                         string stringJWT = response.Content.ReadAsStringAsync().Result;
@@ -328,12 +330,12 @@ namespace TempleVolunteerClient
                             {
                                 TempData["ModalMessage"] = string.Format("{0}", responseDeserialized.Message);
 
-                                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                             }
 
                             TempData["ModalMessage"] = "Error occurred. Unable to get jwt.Data. Please contact support.";
 
-                            return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                            return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                         }
 
                         var token = new JwtSecurityToken(jwtEncodedString: jwt.AccessToken);
@@ -353,12 +355,14 @@ namespace TempleVolunteerClient
                 {
                     TempData["ModalMessage"] = "Unable to login. Please try again.";
 
-                    return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Login);
+                    return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return RedirectPermanent("/Account/ServerIsDownModalPopUp?type=" + ModalType.Login);
+                TempData["ModalMessage"] = string.Format("Error occurred. Unable to login: '{0}'. Please contact support.", ex.Message);
+
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
             }
         }
 
@@ -383,8 +387,8 @@ namespace TempleVolunteerClient
         #region Verify Email Address
         [HttpGet]
         [AllowAnonymous]
-        [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> VerifyEmailAddress(string emailAddress, string token)
+        //[AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> VerifyEmailAddress(string emailAddress, int propertyId)
         {
             try
             {
@@ -395,8 +399,8 @@ namespace TempleVolunteerClient
 
                     VerifyEmailAddressRequest verifyEmailAddress = new VerifyEmailAddressRequest();
                     verifyEmailAddress.EmailAddress = emailAddress;
-                    verifyEmailAddress.Token = token;
-                    verifyEmailAddress.PropertyId = this.GetIntSession("PropertyId");
+                    //verifyEmailAddress.Token = token;
+                    verifyEmailAddress.PropertyId = propertyId;
 
                     string stringData = JsonConvert.SerializeObject(verifyEmailAddress);
                     var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
@@ -406,7 +410,7 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = "Unable to verify email for registration. Please contact support.";
 
-                        return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                        return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                     }
 
                     var responseDeserialized = JsonConvert.DeserializeObject<ServiceResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
@@ -415,26 +419,26 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = "You have already verified your registration.";
 
-                        return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Login);
+                        return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
                     }
 
                     if (!responseDeserialized.Success)
                     {
                         TempData["ModalMessage"] = "Unable to verify email for registration. Please contact support.";
 
-                        return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                        return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                     }
                 }
 
                 TempData["ModalMessage"] = "You have successfully verified you email for registration, you may now log in.";
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Login);
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred. Unable to register user: '{0}'. Please contact support.", ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred. Unable to verify email address: '{0}'. Please contact support.", ex.Message);
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
             }
         }
         #endregion
@@ -480,20 +484,20 @@ namespace TempleVolunteerClient
                         if (!responseDeserialized.Success)
                         {
                             TempData["ModalMessage"] = string.Format("Unable to find your profile, please try again.");
-                            return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.ForgotPassword);
+                            return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.ForgotPassword);
                         }
                     }
 
                     TempData["ModalMessage"] = "Please check your email to complete resetting your password.";
 
-                    return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Login);
+                    return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
                 }
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred. Unable to register user: '{0}'. Please contact support.", ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred. Unable to reset password: '{0}'. Please contact support.", ex.Message);
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
             }
 
             return View(viewModel);
@@ -534,13 +538,13 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = string.Format("{0} Please contact support.", responseDeserialized.Message);
 
-                        return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                        return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                     }
                 }
 
                 TempData["ModalMessage"] = "Your new password has been updated, you can now login";
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Login);
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
             }
             else
             {
@@ -597,20 +601,20 @@ namespace TempleVolunteerClient
                         {
                             TempData["ModalMessage"] = string.Format("{0} Please contact support.", responseDeserialized.Message);
 
-                            return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                            return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                         }
                     }
 
                     TempData["ModalMessage"] = "Your new password has been created, you can now login";
 
-                    return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Login);
+                    return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
                 }
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred. Unable to register user: '{0}'. Please contact support.", ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred. Unable to reset password: '{0}'. Please contact support.", ex.Message);
 
-                return RedirectPermanent("/Account/ModalPopUp");
+                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Login);
             }
 
             return View(viewModel);
@@ -618,7 +622,7 @@ namespace TempleVolunteerClient
         #endregion
 
         #region Helpers
-        public IActionResult ModalPopUp(ModalType type)
+        public IActionResult AccountModalPopUp(ModalType type)
         {
             ModalViewModel viewModel = new ModalViewModel { ModalType = type };
             

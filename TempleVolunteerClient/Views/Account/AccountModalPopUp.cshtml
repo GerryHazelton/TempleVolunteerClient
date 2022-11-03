@@ -12,6 +12,9 @@
 
                 @switch(Model.ModalType) 
                 {
+                    case ModalType.Login:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("Login", "Account")'" />
+                        break;
                     case ModalType.Error:
                         <input type="button" value="OK" onclick="location.href='@Url.Action("Logout", "Account")'" />
                         break;
@@ -24,6 +27,9 @@
                     case ModalType.Profile:
                         <input type="button" value="OK" onclick="location.href='@Url.Action("MyProfile", "Account")'" />
                     break;
+                    default:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("Login", "Account")'" />
+                        break;
                 }
             </div>
             <div>&nbsp;</div>

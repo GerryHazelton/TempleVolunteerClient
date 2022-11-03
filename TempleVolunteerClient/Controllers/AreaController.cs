@@ -58,7 +58,7 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
                     HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Area/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, areaId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
-                    var responseDeserialized = JsonConvert.DeserializeObject<MyProfileResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
+                    var responseDeserialized = JsonConvert.DeserializeObject<AreaResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -78,7 +78,7 @@ namespace TempleVolunteerClient
             {
                 TempData["ModalMessage"] = string.Format("Error occurred in AreaUpsert. Message: '{0}'. Please contact support.", ex.Message);
 
-                return RedirectPermanent("/Account/ModalPopUp?type=" + ModalType.Error);
+                return RedirectPermanent("/Account/AreaModalPopUp?type=" + ModalType.Error);
             }
         }
 

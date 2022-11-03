@@ -10,13 +10,13 @@ using TempleVolunteerClient.Common;
 
 namespace TempleVolunteerClient
 {
-    public class SupplyController : CustomController
+    public class SupplyItemController : CustomController
     {
         private readonly IMapper _mapper;
         private string _token;
         private string _userId;
 
-        public SupplyController(IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> AppSettings, IMapper mapper)
+        public SupplyItemController(IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> AppSettings, IMapper mapper)
             : base(httpContextAccessor, AppSettings)
         {
             _mapper = mapper;

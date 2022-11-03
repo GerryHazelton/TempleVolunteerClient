@@ -1,0 +1,187 @@
+﻿@model TempleVolunteerClient.MyProfileViewModel
+
+<div class="my-profile-form">
+    <form name="myProfileForm" method="post" asp-controller="Account" asp-action="MyProfile" enctype="multipart/form-data">
+
+        <input type="hidden" asp-for="@Model.StaffPrevImage" />
+        <input type="hidden" asp-for="@Model.StaffFileName" />
+
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="FirstName"></label>
+            </div>
+            <div class="col-8">
+                <input id="firstName" asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="LastName"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="Address"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="Address2"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="Address2" class="form-control" />
+                <span asp-validation-for="Address2" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="City"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="State"></label>
+            </div>
+            <div class="col-8">
+                <select asp-for="State" asp-items="Model.States" class="form-control"></select>
+                <span asp-validation-for="State" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="PostalCode"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="PostalCode" class="form-control" />
+                <span asp-validation-for="PostalCode" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="Country"></label>
+            </div>
+            <div class="col-8">
+                <select asp-for="Country" asp-items="Model.Countries" class="form-control"></select>
+                <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="PhoneNumber"></label>
+            </div>
+            <div class="col-8">
+                <input id="phoneNumber" asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="Gender"></label>
+            </div>
+            <div class="col-8">
+                <select asp-for="Gender" asp-items="Model.GenderList" class="form-control"></select>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+        </div>
+        <div style="display: flex;">
+            <div>
+                <div class="form-group row" style="margin-bottom:10px">
+                    <div class="col-10">
+                        First Aid <input asp-for="FirstAid" class="form-check" />
+                    </div>
+                </div>
+                <div class="form-group row" style="margin-bottom:10px">
+                    <div class="col-4">
+                        <label asp-for="CPR"></label>
+                    </div>
+                    <div class="col-8">
+                        <input asp-for="CPR" class="form-check" />
+                    </div>
+                </div>
+                <div class="form-group row" style="margin-bottom:10px">
+                    <div class="col-4">
+                        <label asp-for="Kriyaban"></label>
+                    </div>
+                    <div class="col-8">
+                        <input asp-for="Kriyaban" class="form-check" />
+                    </div>
+                </div>
+                <div class="form-group row" style="margin-bottom:10px">
+                    <div class="col-4">
+                        <label asp-for="LessonStudent"></label>
+                    </div>
+                    <div class="col-8">
+                        <input asp-for="LessonStudent" class="form-check" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-84">
+                    <img src="data:image/png;base64,@Html.DisplayFor(model => model.StaffPrevImage)" height="150" width="100">
+                </div>
+             </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <label asp-for="StaffFileName" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-3 text-right">
+                <input type="file" name="staffImageFile" asp-for="StaffImageFile" accept="image/x-png,image/gif,image/jpeg" />
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-3 offset-4">
+                <button type="submit" class="btn btn-primary form-control">
+                    Update
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            $('#phoneNumber').keyup(function (e) {
+                var ph = this.value.replace(/\D/g, '').substring(0, 10);
+                var deleteKey = (e.keyCode == 8 || e.keyCode == 46);
+                var len = ph.length;
+                if (len == 0) {
+                    ph = ph;
+                } else if (len < 3) {
+                    ph = '(' + ph;
+                } else if (len == 3) {
+                    ph = '(' + ph + (deleteKey ? '' : ') ');
+                } else if (len < 6) {
+                    ph = '(' + ph.substring(0, 3) + ') ' + ph.substring(3, 6);
+                } else if (len == 6) {
+                    ph = '(' + ph.substring(0, 3) + ') ' + ph.substring(3, 6) + (deleteKey ? '' : '-');
+                } else {
+                    ph = '(' + ph.substring(0, 3) + ') ' + ph.substring(3, 6) + '-' + ph.substring(6, 10);
+                }
+                this.value = ph;
+            });
+        });
+    </script>
+}
+

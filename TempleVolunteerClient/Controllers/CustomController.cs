@@ -954,7 +954,7 @@ namespace TempleVolunteerClient
         #endregion
 
         #region Helpers
-        public IActionResult ModalPopUp(ModalType type)
+        public IActionResult CustomModalPopUp(ModalType type)
         {
             ModalViewModel viewModel = new ModalViewModel { ModalType = type };
 
