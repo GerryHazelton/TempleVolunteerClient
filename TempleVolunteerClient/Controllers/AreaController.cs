@@ -143,7 +143,7 @@ namespace TempleVolunteerClient
 
         #region Getters
         [HttpGet]
-        [AutoValidateAntiforgeryToken]
+        //[AutoValidateAntiforgeryToken]
         public async Task<IActionResult> AreaGet(bool isActive = true)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");

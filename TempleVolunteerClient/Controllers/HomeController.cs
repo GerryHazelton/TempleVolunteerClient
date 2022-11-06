@@ -17,7 +17,7 @@ namespace TempleVolunteerClient.Controllers
         {
             LoginViewModel viewModel = new LoginViewModel();
             viewModel.EmailAddress = "gerryhazelton@gmail.com";
-            viewModel.Password = "Mataji99#";
+            viewModel.Password = "11111111";
             viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
 
             return View(viewModel);

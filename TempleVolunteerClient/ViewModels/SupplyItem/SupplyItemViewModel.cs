@@ -4,7 +4,7 @@ using TempleVolunteerClient.Common;
 
 namespace TempleVolunteerClient
 {
-    public class SupplyViewModel : Audit
+    public class SupplyItemViewModel : Audit
     {
         public int SupplyItemId { get; set; }
         public string Name { get; set; }
@@ -13,9 +13,10 @@ namespace TempleVolunteerClient
         public int Quantity { get; set; }
         public string BinNumber { get; set; }
         public string SupplyItemFileName { get; set; }
-        public byte[]? SupplyItemImage { get; set; }
+        //public byte[]? SupplyItemImageFile { get; set; }
+        public IFormFile SupplyItemImageFile { get; set; }
 
-        public SupplyViewModel()
+        public SupplyItemViewModel()
         {
         }
     }
