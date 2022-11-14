@@ -31,7 +31,7 @@ namespace TempleVolunteerClient
         }
 
         #region Upserts
-        [HttpGet("AreaUpsert")]
+        [HttpGet]
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> Upsert(int areaId = 0)
         {
@@ -45,6 +45,7 @@ namespace TempleVolunteerClient
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
                 viewModel.SupplyItems = await this.GetSupplyItemSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                viewModel.EventTasks = await this.GetEventTaskSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
 
                 return View(viewModel);
             }
@@ -70,6 +71,7 @@ namespace TempleVolunteerClient
                     var area = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
                     viewModel = _mapper.Map<AreaViewModel>(JsonConvert.DeserializeObject<AreaRequest>(area.Data.ToString()));
                     viewModel.SupplyItems = await this.GetSupplyItemSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                    viewModel.EventTasks = await this.GetEventTaskSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
                 }
 
                 return View(viewModel);
@@ -82,7 +84,7 @@ namespace TempleVolunteerClient
             }
         }
 
-        [HttpPost("AreaUpsert")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(AreaViewModel viewModel)
         {
@@ -94,6 +96,9 @@ namespace TempleVolunteerClient
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
                 viewModel.SupplyItems = await this.GetSupplyItemSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                viewModel.EventTasks = await this.GetEventTaskSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+
+                return View(viewModel);
             }
 
             try
@@ -103,20 +108,28 @@ namespace TempleVolunteerClient
                     var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-                    
+
+                    AreaRequest areaRequest = _mapper.Map<AreaRequest>(viewModel);
+                    string stringData;
+                    StringContent contentData;
                     HttpResponseMessage response;
 
                     if (viewModel.AreaId == 0)
                     {
-                        var areaRequest = _mapper.Map<AreaRequest>(viewModel);
-                        string stringData = JsonConvert.SerializeObject(areaRequest);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        areaRequest.CreatedDate = DateTime.UtcNow;
+                        areaRequest.CreatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(areaRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PostAsync(string.Format("{0}/Area/PostAsync", this.Uri), contentData).Result;
                     }
                     else
                     {
-                        string stringData = JsonConvert.SerializeObject(viewModel);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        areaRequest.CreatedDate = viewModel.CreatedDate;
+                        areaRequest.CreatedBy = viewModel.CreatedBy;
+                        areaRequest.UpdatedDate = DateTime.UtcNow;
+                        areaRequest.UpdatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(areaRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PutAsync(string.Format("{0}/Area/PutAsync", this.Uri), contentData).Result;
                     }
 
@@ -128,13 +141,18 @@ namespace TempleVolunteerClient
 
                         return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
                     }
+
+                    viewModel.SupplyItems = await this.GetSupplyItemSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                    viewModel.EventTasks = await this.GetEventTaskSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
                 }
 
-                return View(viewModel);
+                TempData["ModalMessage"] = viewModel.AreaId == 0 ? string.Format("Area successfully created.") : string.Format("Area successfully updated.");
+
+                return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Area);
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: AreaUpsert(AreaViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
                 return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
             };
@@ -143,7 +161,7 @@ namespace TempleVolunteerClient
 
         #region Getters
         [HttpGet]
-        //[AutoValidateAntiforgeryToken]
+        [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> AreaGet(bool isActive = true)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
@@ -163,13 +181,13 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Area/AreaModalPopUp?type=" + ModalType.Error);
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Area/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
                         TempData["ModalMessage"] = string.Format("Error occuured in AreaGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Area/StaffModalPopUp");
+                        return RedirectPermanent("/Area/AreaModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -194,7 +212,7 @@ namespace TempleVolunteerClient
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
-            StaffViewModel viewModel = new StaffViewModel();
+            AreaViewModel viewModel = new AreaViewModel();
 
             try
             {
@@ -209,7 +227,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Area/AreaModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Area?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -237,7 +255,7 @@ namespace TempleVolunteerClient
         #endregion
 
         [HttpDelete]
-        public async Task<IActionResult> AreaDelete(int areaId, int propertyId)
+        public async Task<IActionResult> Delete(int areaId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -256,7 +274,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Area/AreaModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Area/DeleteAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, areaId, propertyId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Area/DeleteAsync?areaId={1}&propertyId={2}&userId='{3}'", this.Uri, areaId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

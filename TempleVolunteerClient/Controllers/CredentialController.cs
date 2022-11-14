@@ -31,7 +31,7 @@ namespace TempleVolunteerClient
         }
 
         #region Upserts
-        [HttpGet("CredentialUpsert")]
+        [HttpGet]
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> Upsert(int credentialId = 0)
         {
@@ -80,7 +80,7 @@ namespace TempleVolunteerClient
             }
         }
 
-        [HttpPost("CredentialUpsert")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(CredentialViewModel viewModel)
         {
@@ -131,7 +131,7 @@ namespace TempleVolunteerClient
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: CredentialUpsert(CredentialViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
                 return RedirectPermanent("/Credential/CredentialModalPopUp?type=" + ModalType.Error);
             };
@@ -160,13 +160,13 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Credential/CredentialModalPopUp?type=" + ModalType.Error);
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Credential/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
                         TempData["ModalMessage"] = string.Format("Error occuured in CredentialGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Credential/StaffModalPopUp");
+                        return RedirectPermanent("/Credential/CredentialModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -187,11 +187,11 @@ namespace TempleVolunteerClient
 
         [HttpGet]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> CredentialGetById(int staffId)
+        public async Task<IActionResult> CredentialGetById(int credentialId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
-            StaffViewModel viewModel = new StaffViewModel();
+            CredentialViewModel viewModel = new CredentialViewModel();
 
             try
             {
@@ -206,7 +206,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Credential/CredentialModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Credential?id={1}&&userId", this.Uri, credentialId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

@@ -2,7 +2,7 @@
 
 $(document).ready(function () {
     loadDataTable();
-    debugger;
+
     $('#credentialTable tbody').on('click', 'span', function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
         $("#credentialModal").modal('show');
@@ -40,10 +40,10 @@ function loadDataTable() {
                                 <span style="cursor:pointer">
                                     <img id="viewId" class='img-75' src="/img/view.png" alt="View Credential Details" />
                                 </span>
-                                <a href="/Credential/CredentialUpsert?credentialId=${data}">
+                                <a href="/Credential/Upsert?credentialId=${data}">
                                     <img class='img-75' src="/img/edit.png" alt="Edit Credential" />
                                 </a>
-                                <a href=# onclick=Delete('/Credential/CredentialDelete?credentialId='+${data})>
+                                <a href=# onclick=Delete('/Credential/Delete?credentialId='+${data})>
                                     <img class='img-75' src="/img/delete.png" alt="Delete Credential" />
                                 </a>
                             </div>`;

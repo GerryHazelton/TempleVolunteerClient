@@ -9,6 +9,9 @@ namespace TempleVolunteerClient
             CreateMap<AreaViewModel, AreaRequest>();
             CreateMap<AreaRequest, AreaViewModel>();
 
+            CreateMap<CredentialViewModel, CredentialRequest>();
+            CreateMap<CredentialRequest, CredentialViewModel>();
+
             CreateMap<MyProfileViewModel, MyProfileRequest>();
             CreateMap<MyProfileRequest, MyProfileViewModel>();
 
