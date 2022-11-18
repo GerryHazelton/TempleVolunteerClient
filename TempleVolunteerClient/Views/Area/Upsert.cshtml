@@ -16,7 +16,7 @@
         <input type="hidden" asp-for="@Model.CreatedDate" />
 
         <div class="text-danger" asp-validation-summary="ModelOnly"></div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Name" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -25,7 +25,7 @@
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Description" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -34,7 +34,7 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Note" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -42,38 +42,38 @@
                 <input asp-for="Note" class="form-control" />
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="IsActive" style="color:blue" class="font-weight-bold"></label>
+                <label style="color:blue" class="font-weight-bold">Is Active</label>
             </div>
             <div class="col-1">
                 <input asp-for="IsActive" class="form-check" />
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="IsHidden" style="color:blue" class="font-weight-bold"></label>
+                <label style="color:blue" class="font-weight-bold">Is Hidden</label>
             </div>
             <div class="col-1">
                 <input asp-for="IsHidden" class="form-check" />
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="SupplyItems" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-1">
-                @Html.ListBoxFor(m => m.SupplyItemIds, Model.SupplyItems, new { style= "width:250px" })
-e            </div>
+                @Html.ListBoxFor(m => m.SupplyItemIds, Model.SupplyItems, new { @class="listbox", style= "width:250px" })
+            </div>
         </div>
         <br />
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="EventTasks" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-1">
-                @Html.ListBoxFor(m => m.EventTaskIds, Model.EventTasks, new { style= "width:250px" })
-e            </div>
+                @Html.ListBoxFor(m => m.EventTaskIds, Model.EventTasks, new { @class="listbox", style= "width:250px" })
+            </div>
         </div>
         <br />
         <div class="form-group row">
@@ -93,9 +93,9 @@ e            </div>
 @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 <script>
     $(document).ready(function () {
-        //$('.listbox').multiselect({
-        //    includeSelectAllOption: true
-        //});
+        $('.listbox').multiselect({
+            includeSelectAllOption: true
+        });
         
         $("#nameId").focus();
 
