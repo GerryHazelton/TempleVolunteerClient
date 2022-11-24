@@ -11,14 +11,18 @@ namespace TempleVolunteerClient
         [Required]
         [MaxLength(25, ErrorMessage = "First Name cannot exceed 25 characters.")]
         [Display(Name = "First Name")]
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; }
 
         public int LoggedInStaff { get; set; }
+
+        [MaxLength(25, ErrorMessage = "Middle Name cannot exceed 25 characters.")]
+        [Display(Name = "Middle Name")]
+        public string? MiddleName { get; set; }
 
         [Required]
         [MaxLength(25, ErrorMessage = "Last Name cannot exceed 25 characters.")]
         [Display(Name = "Last Name")]
-        public string? LastName { get; set; }
+        public string LastName { get; set; }
 
         [Required]
         [MaxLength(100, ErrorMessage = "Address cannot exceed 100 characters.")]
@@ -102,13 +106,6 @@ namespace TempleVolunteerClient
         [Display(Name = "Lesson Student")]
         public bool LessonStudent { get; set; }
 
-        [Display(Name = "File Name")]
-        public string? StaffFileName { get; set; }
-
-        public IFormFile StaffImageFile { get; set; }
-        public byte[]? StaffPrevImage { get; set; }
-        public byte[]? StaffImage { get; set; }
-
         [Display(Name = "Is Verified")]
         public bool IsVerified { get; set; }
 
@@ -126,5 +123,15 @@ namespace TempleVolunteerClient
 
         public string? PasswordHash { get; set; }
         public bool IsAdmin { get; set; }
+
+        [Display(Name = "File Name")]
+        public string StaffFileName { get; set; }
+
+        [Display(Name = "Staff File")]
+        public IFormFile StaffImage { get; set; }
+
+        public byte[]? StaffByte { get; set; }
+
+        public byte[]? PrevStaffImage { get; set; }
     }
 }

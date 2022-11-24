@@ -143,14 +143,6 @@ namespace TempleVolunteerClient.Controllers
             }
         }
 
-        //[HttpGet]
-        //public async Task<IList<SelectListItem>> GetAllStaff()
-        //{
-        //    if (!IsAuthenticated()) return (IList<SelectListItem>)RedirectPermanent("/Account/LogOut");
-
-        //    return await this.GetCustomStaff(0);
-        //}
-
         [HttpPost("StaffUpsert")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> StaffUpsert(StaffViewModel viewModel)
@@ -161,15 +153,15 @@ namespace TempleVolunteerClient.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    bool updateImage = viewModel.StaffImageFile != null ? true : false;
+                    bool updateImage = viewModel.StaffImage != null ? true : false;
                     MemoryStream ms = null;
                     var staff = _mapper.Map<StaffRequest>(viewModel);
 
                     if (updateImage)
                     {
                         string wwwRootPath = _environment.WebRootPath;
-                        string fileName = Path.GetFileNameWithoutExtension(viewModel.StaffImageFile.FileName);
-                        string extension = Path.GetExtension(viewModel.StaffImageFile.FileName);
+                        string fileName = Path.GetFileNameWithoutExtension(viewModel.StaffImage.FileName);
+                        string extension = Path.GetExtension(viewModel.StaffImage.FileName);
                         fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
                         string path = Path.Combine(wwwRootPath + "\\img\\", fileName);
                         FileStream fs = null;
@@ -177,7 +169,7 @@ namespace TempleVolunteerClient.Controllers
 
                         using (fs = System.IO.File.Create(path))
                         {
-                            await viewModel.StaffImageFile.CopyToAsync(fs);
+                            await viewModel.StaffImage.CopyToAsync(fs);
 
                             using (ms = new MemoryStream())
                             {
@@ -192,24 +184,11 @@ namespace TempleVolunteerClient.Controllers
 
                         System.IO.File.Delete(path);
                     }
-                    else
-                    {
-                        if (viewModel.StaffImage != null)
-                        {
-                            viewModel.StaffPrevImage = viewModel.StaffImage;
-                        }
-                    }
 
                     if (viewModel.StaffId == 0)
                     {
                         using (HttpClient client = new HttpClient())
                         {
-                            if (updateImage)
-                            {
-                                staff.StaffImageFileName = viewModel.StaffImageFile.FileName;
-                                //staff.StaffImage = ms.ToArray();
-                            }
-
                             staff.CreatedBy = GetStringSession("EmailAddress");
                             staff.CreatedDate = DateTime.Now;
                             staff.Password = this.TempPassword;
@@ -243,20 +222,6 @@ namespace TempleVolunteerClient.Controllers
                     {
                         using (HttpClient client = new HttpClient())
                         {
-                            if (!updateImage)
-                            {
-                                if (viewModel.StaffPrevImage != null)
-                                {
-                                    staff.StaffImageFileName = viewModel.StaffFileName;
-                                    //staff.StaffImage = viewModel.StaffPrevImage;
-                                }
-                            }
-                            else
-                            {
-                                staff.StaffImageFileName = viewModel.StaffImageFile.FileName;
-                                //staff.StaffImage = ms.ToArray();
-                            }
-
                             staff.UpdatedBy = GetStringSession("EmailAddress");
                             staff.UpdatedDate = DateTime.Now;
                             staff.UnlockUser = viewModel.UnlockUser;

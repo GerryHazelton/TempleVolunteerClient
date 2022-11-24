@@ -31,7 +31,7 @@ namespace TempleVolunteerClient
         }
 
         #region Upserts
-        [HttpGet("CategoryUpsert")]
+        [HttpGet]
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> Upsert(int categoryId = 0)
         {
@@ -80,7 +80,7 @@ namespace TempleVolunteerClient
             }
         }
 
-        [HttpPost("CategoryUpsert")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(CategoryViewModel viewModel)
         {
@@ -91,6 +91,8 @@ namespace TempleVolunteerClient
                 viewModel.CreatedDate = DateTime.UtcNow;
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
+
+                return View(viewModel);
             }
 
             try
@@ -101,19 +103,27 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
+                    CategoryRequest categoryRequest = _mapper.Map<CategoryRequest>(viewModel);
+                    string stringData;
+                    StringContent contentData;
                     HttpResponseMessage response;
 
                     if (viewModel.CategoryId == 0)
                     {
-                        var categoryRequest = _mapper.Map<CategoryRequest>(viewModel);
-                        string stringData = JsonConvert.SerializeObject(categoryRequest);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        categoryRequest.CreatedDate = DateTime.UtcNow;
+                        categoryRequest.CreatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(categoryRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PostAsync(string.Format("{0}/Category/PostAsync", this.Uri), contentData).Result;
                     }
                     else
                     {
-                        string stringData = JsonConvert.SerializeObject(viewModel);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        categoryRequest.CreatedDate = viewModel.CreatedDate;
+                        categoryRequest.CreatedBy = viewModel.CreatedBy;
+                        categoryRequest.UpdatedDate = DateTime.UtcNow;
+                        categoryRequest.UpdatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(categoryRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PutAsync(string.Format("{0}/Category/PutAsync", this.Uri), contentData).Result;
                     }
 
@@ -127,11 +137,13 @@ namespace TempleVolunteerClient
                     }
                 }
 
-                return View(viewModel);
+                TempData["ModalMessage"] = viewModel.CategoryId == 0 ? string.Format("Category successfully created.") : string.Format("Category successfully updated.");
+
+                return RedirectPermanent("/Category/CategoryModalPopUp?type=" + ModalType.Category);
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: CategoryUpsert(CategoryViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
                 return RedirectPermanent("/Category/CategoryModalPopUp?type=" + ModalType.Error);
             };
@@ -140,7 +152,7 @@ namespace TempleVolunteerClient
 
         #region Getters
         [HttpGet]
-        //[AutoValidateAntiforgeryToken]
+        [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> CategoryGet(bool isActive = true)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
@@ -160,13 +172,13 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Category/CategoryModalPopUp?type=" + ModalType.Error);
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
                         TempData["ModalMessage"] = string.Format("Error occuured in CategoryGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Category/StaffModalPopUp");
+                        return RedirectPermanent("/Category/CategoryModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -191,7 +203,7 @@ namespace TempleVolunteerClient
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
-            StaffViewModel viewModel = new StaffViewModel();
+            CategoryViewModel viewModel = new CategoryViewModel();
 
             try
             {
@@ -206,7 +218,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Category/CategoryModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -234,7 +246,7 @@ namespace TempleVolunteerClient
         #endregion
 
         [HttpDelete]
-        public async Task<IActionResult> CategoryDelete(int categoryId, int propertyId)
+        public async Task<IActionResult> Delete(int categoryId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -253,7 +265,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Category/CategoryModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Category/DeleteAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, categoryId, propertyId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Category/DeleteAsync?categoryId={1}&propertyId={2}&userId='{3}'", this.Uri, categoryId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

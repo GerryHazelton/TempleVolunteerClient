@@ -7,14 +7,22 @@ namespace TempleVolunteerClient.Common
         public enum ModalType
         {
             Area,
+            Category,
+            Committee,
+            Credential,
             Document,
             Error,
             Event,
             EventTask,
+            EventType,
             ForgotPassword,
             Home,
             Login,
-            Profile
+            Message,
+            Profile,
+            Role,
+            Staff,
+            SupplyItem
         }
 
         static public List<SelectListItem> GenderList { get; } = new List<SelectListItem>

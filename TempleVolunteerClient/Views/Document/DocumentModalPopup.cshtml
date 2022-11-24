@@ -1,21 +1,37 @@
-﻿@{
-    var message = ViewData["ModalMessage"];
-}
+﻿@using static TempleVolunteerClient.Common.ListHelpers
+@model TempleVolunteerClient.ModalViewModel
 
 <div class="modal fade" tabindex="-1" id="showMessage" data-backdrop="static" data-keyboard="false">
     <div style="height:50px"></div>
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body" style="word-wrap:break-word">
-                @message
+                @TempData["ModalMessage"]
             </div>
-            <div class="col-3">
-                <a asp-action="Index" asp-controller="Home" class="btn btn-primary">OK</a>
+            <div class="col-3 offset-1">
+
+                @switch (Model.ModalType)
+                {
+                    case ModalType.Error:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("Logout", "Account")'" />
+                        break;
+                    case ModalType.Document:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("Index", "Document")'" />
+                        break;
+                    default:
+                        <input type="button" value="OK" onclick="location.href='@Url.Action("Logout", "Account")'" />
+                        break;
+                }
             </div>
             <div>&nbsp;</div>
         </div>
     </div>
 </div>
 @section Scripts{
-    <script src="~/js/showModalMessage.js"></script>
-}
+    <script>
+        $(document).ready(function () {
+            $("#showMessage").modal('show');
+            $(".container").css('background-color', 'transparent');
+        });
+    </script>
+ }

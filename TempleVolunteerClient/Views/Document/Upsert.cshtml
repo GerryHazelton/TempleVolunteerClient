@@ -1,15 +1,17 @@
 ﻿@using TempleVolunteerClient
-@model CredentialViewModel
+@model DocumentViewModel
 
 <br />
-<h2 class="text-info">@(Model.CredentialId != 0 ? "Edit" : "Create") Credential</h2>
+<h2 class="text-info">@(Model.DocumentId != 0 ? "Edit" : "Create") Document</h2>
 <br />
 
 <div class="border container" style="padding:30px;">
-    @using (@Html.BeginForm("Upsert", "Credential", FormMethod.Post, new { id = "credentialForm" }))
+    @using (@Html.BeginForm("Upsert", "Document", FormMethod.Post, new { id = "documentForm", enctype = "multipart/form-data" }))
     {
         <input type="hidden" asp-for="@Model.PropertyId" />
-        <input id="hiddenId" type="hidden" asp-for="@Model.CredentialId" />
+        <input id="hiddenId" type="hidden" asp-for="@Model.DocumentId" />
+        <input type="hidden" asp-for="@Model.PrevDocumentFileName" />
+        <input type="hidden" asp-for="@Model.DocumentByte" />
         <input type="hidden" asp-for="@Model.UpdatedBy" />
         <input type="hidden" asp-for="@Model.UpdatedDate" />
         <input type="hidden" asp-for="@Model.CreatedBy" />
@@ -21,7 +23,7 @@
                 <label asp-for="Name" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input id="nameId" idVal="@Model.CredentialId" asp-for="Name" class="form-control" />
+                <input id="nameId" idVal="@Model.DocumentId" asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
@@ -44,6 +46,32 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
+                <label asp-for="DocumentFileName" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                <input id="fileNameId" asp-for="DocumentFileName" class="form-control" value="@Model.DocumentFileName" readonly />
+            </div>
+        </div>
+        @if (Model.DocumentFileName != null)
+        {
+            <div class="form-group row" style="margin-bottom:10px; text-align:right">
+                <div class="col-6 text-right">
+                    <input id="imageFileId" asp-for="DocumentImage" accept="application/pdf">
+                    <span asp-validation-for="DocumentImage" class="text-danger"></span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-group row" style="margin-bottom:10px; text-align:right">
+                <div class="col-6 text-right">
+                    <input id="imageFileId" asp-for="DocumentImage" accept="application/pdf" required />
+                    <span asp-validation-for="DocumentImage" class="text-danger"></span>
+                </div>
+            </div>
+        }
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
+            <div class="col-3 text-right">
                 <label style="color:blue" class="font-weight-bold">Is Active</label>
             </div>
             <div class="col-1">
@@ -62,11 +90,11 @@
         <div class="form-group row">
             <div class="col-3 offset-3">
                 <button id="buttonId" type="submit" class="btn btn-primary form-control">
-                    @(Model.CredentialId != 0 ? "Update" : "Create")
+                    @(Model.DocumentId != 0 ? "Update" : "Create")
                 </button>
             </div>
             <div class="col-3">
-                <a asp-action="Index" asp-controller="Credential" class="btn btn-primary form-control">Retrun</a>
+                <a asp-action="Index" asp-controller="Document" class="btn btn-primary form-control">Retrun</a>
             </div>
         </div>
     }
@@ -80,10 +108,16 @@
         $(document).ready(function () {
             $("#nameId").focus();
 
-            $("#credentialForm").on("submit", function (e) {
+            $('#imageFileId').change(function () {
+                var filename = $('input[type=file]').val().split('\\').pop();
+                var lastIndex = filename.lastIndexOf("\\");
+                $('#fileNameId').val(filename);
+            });
+
+            $("#documentForm").on("submit", function (e) {
                 e.preventDefault();
                 $.ajax({
-                    url: '/Credential/CredentialGet/',
+                    url: '/Document/DocumentGet/',
                     type: 'GET',
                     dataType: "json",
                     success: validateData,
@@ -95,7 +129,7 @@
                 function validateData(data) {
                     let exists = false;
                     $.each(data.data, function (i, item) {
-                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.credentialId) != parseInt($("#hiddenId").val())));
+                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.documentId) != parseInt($("#hiddenId").val())));
 
                         if (exists) {
                             return false;
@@ -103,10 +137,10 @@
                     });
 
                     if (exists) {
-                        swal("This credential already exists!", "");
+                        swal("This document already exists!", "");
                     }
                     else {
-                        $("#credentialForm").unbind("submit").submit();
+                        $("#documentForm").unbind("submit").submit();
                     }
                 };
             });

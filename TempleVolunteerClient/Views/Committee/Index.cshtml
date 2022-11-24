@@ -7,7 +7,7 @@
 <br />
 <div class="container row p-0 m-0">
     <div class="col-6">
-        <h2 class="text-info">Manage Committees (coming soon...)</h2>
+        <h2 class="text-info">Manage Committees</h2>
     </div>
     <div class="col-3 offset-3">
         <a asp-action="Upsert" asp-controller="Committee" class="btn btn-info form-control text-white">
@@ -20,6 +20,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
+                    <th>Note</th>
                     <th></th>
                 </tr>
             </thead>
@@ -37,6 +38,10 @@
                 <label style="color:blue" class="font-weight-bold">Committee ID:</label>&nbsp;<span id="committeeId"></span>
                 <br />
                 <label style="color:blue" class="font-weight-bold">Name:</label>&nbsp;<span id="committeeName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Description:</label>&nbsp;<span id="committeeDescription"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Note:</label>&nbsp;<span id="committeeNote"></span>
                 <br />
                 <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="committeeIsActive"></span>
                 <br />

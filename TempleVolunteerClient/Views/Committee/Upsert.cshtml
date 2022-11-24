@@ -1,15 +1,15 @@
 ﻿@using TempleVolunteerClient
-@model CredentialViewModel
+@model CommitteeViewModel
 
 <br />
-<h2 class="text-info">@(Model.CredentialId != 0 ? "Edit" : "Create") Credential</h2>
+<h2 class="text-info">@(Model.CommitteeId != 0 ? "Edit" : "Create") Committee</h2>
 <br />
 
 <div class="border container" style="padding:30px;">
-    @using (@Html.BeginForm("Upsert", "Credential", FormMethod.Post, new { id = "credentialForm" }))
+    @using (@Html.BeginForm("Upsert", "Committee", FormMethod.Post, new { id = "committeeForm" }))
     {
         <input type="hidden" asp-for="@Model.PropertyId" />
-        <input id="hiddenId" type="hidden" asp-for="@Model.CredentialId" />
+        <input id="hiddenId" type="hidden" asp-for="@Model.CommitteeId" />
         <input type="hidden" asp-for="@Model.UpdatedBy" />
         <input type="hidden" asp-for="@Model.UpdatedDate" />
         <input type="hidden" asp-for="@Model.CreatedBy" />
@@ -21,7 +21,7 @@
                 <label asp-for="Name" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input id="nameId" idVal="@Model.CredentialId" asp-for="Name" class="form-control" />
+                <input id="nameId" idVal="@Model.CommitteeId" asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
@@ -44,6 +44,22 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
+                <label asp-for="Areas" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-1">
+                @Html.ListBoxFor(m => m.AreaIds, Model.Areas, new { @class="listbox", style= "width:250px" })
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
+            <div class="col-3 text-right">
+                <label asp-for="Staff" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-1">
+                @Html.ListBoxFor(m => m.StaffIds, Model.Staff, new { @class="listbox", style= "width:250px" })
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
+            <div class="col-3 text-right">
                 <label style="color:blue" class="font-weight-bold">Is Active</label>
             </div>
             <div class="col-1">
@@ -62,11 +78,11 @@
         <div class="form-group row">
             <div class="col-3 offset-3">
                 <button id="buttonId" type="submit" class="btn btn-primary form-control">
-                    @(Model.CredentialId != 0 ? "Update" : "Create")
+                    @(Model.CommitteeId != 0 ? "Update" : "Create")
                 </button>
             </div>
             <div class="col-3">
-                <a asp-action="Index" asp-controller="Credential" class="btn btn-primary form-control">Retrun</a>
+                <a asp-action="Index" asp-controller="Committee" class="btn btn-primary form-control">Retrun</a>
             </div>
         </div>
     }
@@ -80,10 +96,10 @@
         $(document).ready(function () {
             $("#nameId").focus();
 
-            $("#credentialForm").on("submit", function (e) {
+            $("#committeeForm").on("submit", function (e) {
                 e.preventDefault();
                 $.ajax({
-                    url: '/Credential/CredentialGet/',
+                    url: '/Committee/CommitteeGet/',
                     type: 'GET',
                     dataType: "json",
                     success: validateData,
@@ -95,7 +111,7 @@
                 function validateData(data) {
                     let exists = false;
                     $.each(data.data, function (i, item) {
-                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.credentialId) != parseInt($("#hiddenId").val())));
+                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.committeeId) != parseInt($("#hiddenId").val())));
 
                         if (exists) {
                             return false;
@@ -103,10 +119,10 @@
                     });
 
                     if (exists) {
-                        swal("This credential already exists!", "");
+                        swal("This committee already exists!", "");
                     }
                     else {
-                        $("#credentialForm").unbind("submit").submit();
+                        $("#committeeForm").unbind("submit").submit();
                     }
                 };
             });

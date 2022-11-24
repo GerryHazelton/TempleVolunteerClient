@@ -1,15 +1,15 @@
 ﻿@using TempleVolunteerClient
-@model CredentialViewModel
+@model CategoryViewModel
 
 <br />
-<h2 class="text-info">@(Model.CredentialId != 0 ? "Edit" : "Create") Credential</h2>
+<h2 class="text-info">@(Model.CategoryId != 0 ? "Edit" : "Create") Category</h2>
 <br />
 
 <div class="border container" style="padding:30px;">
-    @using (@Html.BeginForm("Upsert", "Credential", FormMethod.Post, new { id = "credentialForm" }))
+    @using (@Html.BeginForm("Upsert", "Category", FormMethod.Post, new { id = "categoryForm" }))
     {
         <input type="hidden" asp-for="@Model.PropertyId" />
-        <input id="hiddenId" type="hidden" asp-for="@Model.CredentialId" />
+        <input id="hiddenId" type="hidden" asp-for="@Model.CategoryId" />
         <input type="hidden" asp-for="@Model.UpdatedBy" />
         <input type="hidden" asp-for="@Model.UpdatedDate" />
         <input type="hidden" asp-for="@Model.CreatedBy" />
@@ -21,7 +21,7 @@
                 <label asp-for="Name" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input id="nameId" idVal="@Model.CredentialId" asp-for="Name" class="form-control" />
+                <input id="nameId" idVal="@Model.CategoryId" asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
@@ -62,54 +62,52 @@
         <div class="form-group row">
             <div class="col-3 offset-3">
                 <button id="buttonId" type="submit" class="btn btn-primary form-control">
-                    @(Model.CredentialId != 0 ? "Update" : "Create")
+                    @(Model.CategoryId != 0 ? "Update" : "Create")
                 </button>
             </div>
             <div class="col-3">
-                <a asp-action="Index" asp-controller="Credential" class="btn btn-primary form-control">Retrun</a>
+                <a asp-action="Index" asp-controller="Category" class="btn btn-primary form-control">Retrun</a>
             </div>
         </div>
     }
 </div>
 
-@section Scripts{
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-    <script>
-        $(document).ready(function () {
-            $("#nameId").focus();
+@section Scripts{    
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+<script>
+    $(document).ready(function () {
+        $("#nameId").focus();
 
-            $("#credentialForm").on("submit", function (e) {
-                e.preventDefault();
-                $.ajax({
-                    url: '/Credential/CredentialGet/',
-                    type: 'GET',
-                    dataType: "json",
-                    success: validateData,
-                    error: function (result) {
-                        alert('error');
+        $("#categoryForm").on("submit", function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '/Category/CategoryGet/',
+                type: 'GET',
+                dataType: "json",
+                success: validateData,
+                error: function (result) {
+                    alert('error');
+                }
+            });
+
+            function validateData(data) {
+                let exists = false;
+                $.each(data.data, function (i, item) {
+                    exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.categoryId) != parseInt($("#hiddenId").val())));
+                        
+                    if (exists) {
+                        return false;
                     }
                 });
 
-                function validateData(data) {
-                    let exists = false;
-                    $.each(data.data, function (i, item) {
-                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.credentialId) != parseInt($("#hiddenId").val())));
-
-                        if (exists) {
-                            return false;
-                        }
-                    });
-
-                    if (exists) {
-                        swal("This credential already exists!", "");
-                    }
-                    else {
-                        $("#credentialForm").unbind("submit").submit();
-                    }
-                };
-            });
+                if (exists) {
+                    swal("This category already exists!", "");
+                }
+                else {
+                    $("#categoryForm").unbind("submit").submit();
+                }
+            };
         });
-    </script>
+    });
+</script>
 }

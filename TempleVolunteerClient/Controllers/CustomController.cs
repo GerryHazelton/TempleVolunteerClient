@@ -23,603 +23,6 @@ namespace TempleVolunteerClient
             _AppSettings = AppSettings.Value;
         }
 
-        protected string Uri 
-        { 
-            get { return _AppSettings.UriLocal; }
-            //get { return _AppSettings.UriHiranyaloka; }
-            //get { return _AppSettings.UriProduction; }
-        }
-        
-        protected string ContentType { get { return _AppSettings.ContentType; } }
-        protected string MyToken { get { return _httpContextAccessor.HttpContext.Session.GetString("token"); } }
-        protected string MyUserId { get { return _httpContextAccessor.HttpContext.Session.GetString("EmailAddress"); } }
-        protected int Admin { get { return (int)_httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin"); } }
-        protected string TempPassword { get { return _AppSettings.TempPassword; } }
-
-        #region Authenticated / Authorized
-        protected bool IsAuthenticated()
-        {
-            if (String.IsNullOrEmpty(MyToken) || String.IsNullOrEmpty(MyUserId) || MyUserId.IndexOf("@") <= 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        protected bool IsAdmin()
-        {
-            if (Admin == 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-        #endregion
-
-        #region Session
-        protected void SetStringSession(string key, string value)
-        {
-            _httpContextAccessor.HttpContext.Session.SetString(key.ToString(), value);
-        }
-
-        protected string GetStringSession(string key)
-        {
-            return _httpContextAccessor.HttpContext.Session.GetString(key.ToString());
-        }
-
-        protected void SetIntSession(string key, int value)
-        {
-            HttpContext.Session.SetInt32(key.ToString(), value);
-        }
-
-        protected int GetIntSession(string key)
-        {
-            return HttpContext.Session.GetInt32(key.ToString()) == null ? 0 : (int)HttpContext.Session.GetInt32(key.ToString());
-        }
-
-        protected int GetPropertyId()
-        {
-            return Convert.ToInt32(GetStringSession("PropertyId").ToString());
-        }
-        #endregion
-
-        #region Temple Properties
-        protected async Task<IList<SelectListItem>> GetTempleProperties(bool isActive, bool isTokenRequired)
-        {
-            try
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-                    client.DefaultRequestHeaders.Accept.Add(contentType);
-
-                    if (isTokenRequired)
-                    {
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-                        if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-                        {
-                            throw new Exception("Bearer token is null");
-                        }
-                    }
-
-                    string email = GetStringSession("EmailAddress");
-                    int? propertyId = GetIntSession("PropertyId");
-                    
-                    MiscRequest misc = new MiscRequest();
-                    misc.UserId = !String.IsNullOrEmpty(email) ? email : "srfyssvolunteer@gmail.com";
-                    misc.PropertyId = (int)((propertyId == null || propertyId > 0) ? propertyId : 0);
-                    misc.DeleteById = 0;
-                    misc.GetById = 0;
-
-                    string stringData = JsonConvert.SerializeObject(misc);
-                    var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
-                    HttpResponseMessage response = await client.PostAsync(string.Format("{0}/Account/GetAllPropertiesAsync", this.Uri), contentData);
-                    stringData = response.Content.ReadAsStringAsync().Result;
-                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-                    IList<PropertyViewModel> properties = JsonConvert.DeserializeObject<IList<PropertyViewModel>>(data.Data.ToString());
-
-                    IList<SelectListItem> selectItems = new List<SelectListItem>();
-                    selectItems.Add(new SelectListItem("", ""));
-                    foreach (PropertyViewModel property in properties)
-                    {
-                        if (isActive && property.IsActive)
-                        {
-                            selectItems.Add(new SelectListItem(property.Name, property.PropertyId.ToString()));
-                        }
-                    }
-
-                    return selectItems;
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-        #endregion
-
-        #region Event Tasks
-        protected async Task<IList<EventTaskRequest>> GetEventTasks(int propertyId, string userId, bool isActive, bool isHidden)
-        {
-            try
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-                    client.DefaultRequestHeaders.Accept.Add(contentType);
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-                    {
-                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
-
-                        return (IList<EventTaskRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
-                    }
-
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventTask/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
-
-                    string stringData = response.Content.ReadAsStringAsync().Result;
-                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-                    var items = JsonConvert.DeserializeObject<IList<EventTaskRequest>>(data.Data.ToString());
-
-                    IList<EventTaskRequest> selectItems = new List<EventTaskRequest>();
-
-                    foreach (EventTaskRequest? item in items)
-                    {
-                        if (isActive)
-                        {
-                            selectItems.Add(new EventTaskRequest() { EventTaskId = item.EventTaskId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
-                        }
-                    }
-
-                    return selectItems;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        protected async Task<IList<SelectListItem>> GetEventTaskSelectList(int propertyId, string userId, bool isActive, bool isHidden)
-        {
-            try
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-                    client.DefaultRequestHeaders.Accept.Add(contentType);
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-                    {
-                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
-
-                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
-                    }
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventTask/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
-
-                    string stringData = response.Content.ReadAsStringAsync().Result;
-                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-                    IList<EventTaskRequest> items = JsonConvert.DeserializeObject<IList<EventTaskRequest>>(data.Data.ToString());
-
-                    IList<SelectListItem> selectItems = new List<SelectListItem>();
-
-                    foreach (EventTaskRequest? item in items)
-                    {
-                        selectItems.Add(new SelectListItem(item.Name, item.EventTaskId.ToString()));
-                    }
-
-                    return selectItems;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        protected async Task<EventTaskRequest> GetEventTask(int id, int propertyId, string userId)
-        {
-            try
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-                    client.DefaultRequestHeaders.Accept.Add(contentType);
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-                    {
-                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
-
-                        return (EventTaskRequest)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
-                    }
-
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetByIdAsync?id={1}&propertyId={2}&UserId='{3}", id, propertyId, userId));
-
-                    string stringData = response.Content.ReadAsStringAsync().Result;
-                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-                    var item = JsonConvert.DeserializeObject<IList<EventTaskRequest>>(data.Data.ToString());
-
-                    return (EventTaskRequest)item;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-        #endregion
-
-        #region Categories
-        //protected async Task<IList<Category>> GetCustomCategories()
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Category> categories = JsonConvert.DeserializeObject<IList<Category>>(data.Data.ToString());
-
-        //            return (IList<Category>)categories.Select(x=>x.IsActive == true);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<IList<SelectListItem>> GetCustomCategories(int categoryId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Category> categories = JsonConvert.DeserializeObject<IList<Category>>(data.Data.ToString());
-
-        //            IList<SelectListItem> selectItems = new List<SelectListItem>();
-        //            foreach (Category category in categories)
-        //            {
-        //                if (category.IsActive != true)
-        //                {
-        //                    continue;
-        //                }
-
-        //                if (category.CategoryId == categoryId)
-        //                {
-        //                    selectItems.Add(new SelectListItem(category.Name, category.CategoryId.ToString(), true));
-        //                }
-        //                else
-        //                {
-        //                    selectItems.Add(new SelectListItem(category.Name, category.CategoryId.ToString()));
-        //                }
-        //            }
-
-        //            return selectItems;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<Category> GetCustomCategory(int categoryId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Category> categories = JsonConvert.DeserializeObject<IList<Category>>(data.Data.ToString());
-        //            Category returnCategory = null;
-
-        //            foreach (Category category in categories)
-        //            {
-        //                if (category.CategoryId == categoryId && category.IsActive == true)
-        //                {
-        //                    returnCategory = category;
-        //                }
-        //            }
-
-        //            return returnCategory;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-        #endregion
-
-        #region Roles
-        //protected async Task<IList<SelectListItem>> GetCustomRoles(int roleId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role/GetAllAsync?userId=''", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Role> roles = JsonConvert.DeserializeObject<IList<Role>>(data.Data.ToString());
-
-        //            IList<SelectListItem> selectItems = new List<SelectListItem>();
-        //            foreach (Role role in roles)
-        //            {
-        //                if (role.IsActive != true)
-        //                {
-        //                    continue;
-        //                }
-
-        //                if (role.RoleId == roleId)
-        //                {
-        //                    selectItems.Add(new SelectListItem(role.Name, role.RoleId.ToString(), true));
-        //                }
-        //                else
-        //                {
-        //                    selectItems.Add(new SelectListItem(role.Name, role.RoleId.ToString()));
-        //                }
-        //            }
-
-        //            return selectItems;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<Role> GetCustomRole(int roleId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role/GetAllAsync?userId=''", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Role> roles = JsonConvert.DeserializeObject<IList<Role>>(data.Data.ToString());
-        //            Role returnRole = null;
-
-        //            foreach (Role role in roles)
-        //            {
-        //                if (role.RoleId == roleId && role.IsActive == true)
-        //                {
-        //                    returnRole = role;
-        //                }
-        //            }
-
-        //            return returnRole;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<int> GetCustomGuestRole()
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role/GetAllAsync?userId=''", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Role> roles = JsonConvert.DeserializeObject<IList<Role>>(data.Data.ToString());
-        //            int returnRole = 0;
-
-        //            foreach (Role role in roles)
-        //            {
-        //                if (role.Name == "Guest")
-        //                {
-        //                    returnRole = role.RoleId;
-        //                }
-        //            }
-
-        //            return returnRole;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-        #endregion
-
-        #region Properties
-        //protected async Task<IList<Property>> GetCustomProperties()
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Property/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Property> properties = JsonConvert.DeserializeObject<IList<Property>>(data.Data.ToString());
-
-        //            return (IList<Property>)properties.Select(x => x.IsActive == true);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<IList<SelectListItem>> GetCustomProperties(int propertyId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Property/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Property> properties = JsonConvert.DeserializeObject<IList<Property>>(data.Data.ToString());
-
-        //            IList<SelectListItem> selectItems = new List<SelectListItem>();
-        //            foreach (Property? property in properties)
-        //            {
-        //                if (property.IsActive != true)
-        //                {
-        //                    continue;
-        //                }
-
-        //                if (property.PropertyId == propertyId)
-        //                {
-        //                    selectItems.Add(new SelectListItem(property.Name, property.PropertyId.ToString(), true));
-        //                }
-        //                else
-        //                {
-        //                    selectItems.Add(new SelectListItem(property.Name, property.PropertyId.ToString()));
-        //                }
-        //            }
-
-        //            return selectItems;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
-        //protected async Task<Property> GetCustomProperty(int propertyId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
-
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Property/GetAllAsync", this.Uri));
-
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Property> properties = JsonConvert.DeserializeObject<IList<Property>>(data.Data.ToString());
-        //            Property returnProperty = null;
-
-        //            foreach (Property? property in properties)
-        //            {
-        //                if (property.PropertyId == propertyId && property.IsActive == true)
-        //                {
-        //                    returnProperty = property;
-        //                }
-        //            }
-
-        //            return returnProperty;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-        #endregion
-
         #region Areas
         protected async Task<IList<AreaRequest>> GetAreas(int propertyId, string userId, bool isActive, bool isHidden)
         {
@@ -700,225 +103,808 @@ namespace TempleVolunteerClient
                 throw new Exception(ex.Message);
             }
         }
+        #endregion
 
-        //protected async Task<AreaRequest> GetAreaItem(int id, int propertyId, string userId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+        #region Authenticated/Authorized
+        protected bool IsAuthenticated()
+        {
+            if (String.IsNullOrEmpty(MyToken) || String.IsNullOrEmpty(MyUserId) || MyUserId.IndexOf("@") <= 0)
+            {
+                return false;
+            }
 
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+            return true;
+        }
 
-        //                return RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
-        //            }
+        protected bool IsAdmin()
+        {
+            if (Admin == 0)
+            {
+                return false;
+            }
 
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetByIdAsync?id={1}&propertyId={2}&UserId='{3}", id, propertyId, userId));
+            return true;
+        }
+        #endregion
 
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            var item = JsonConvert.DeserializeObject<IList<AreaRequest>>(data.Data.ToString());
+        #region Categories
+        protected async Task<IList<CategoryRequest>> GetCategories(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-        //            return (AreaRequest)item;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<CategoryRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<CategoryRequest>>(data.Data.ToString());
+
+                    IList<CategoryRequest> selectItems = new List<CategoryRequest>();
+
+                    foreach (CategoryRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new CategoryRequest() { CategoryId = item.CategoryId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetCategorySelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<CategoryRequest> items = JsonConvert.DeserializeObject<IList<CategoryRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (CategoryRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.CategoryId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Committees
+        protected async Task<IList<CommitteeRequest>> GetCommittees(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<CommitteeRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<CommitteeRequest>>(data.Data.ToString());
+
+                    IList<CommitteeRequest> selectItems = new List<CommitteeRequest>();
+
+                    foreach (CommitteeRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new CommitteeRequest() { CommitteeId = item.CommitteeId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetCommitteeSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Committee/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<CommitteeRequest> items = JsonConvert.DeserializeObject<IList<CommitteeRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (CommitteeRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.CommitteeId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Credentials
+        protected async Task<IList<CredentialRequest>> GetCredentials(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<CredentialRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<CredentialRequest>>(data.Data.ToString());
+
+                    IList<CredentialRequest> selectItems = new List<CredentialRequest>();
+
+                    foreach (CredentialRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new CredentialRequest() { CredentialId = item.CredentialId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetCredentialSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Credential/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<CredentialRequest> items = JsonConvert.DeserializeObject<IList<CredentialRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (CredentialRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.CredentialId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
         #endregion
 
         #region Documents
-        //protected async Task<IList<Document>> GetCustomDocuments()
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+        protected async Task<IList<DocumentRequest>> GetDocuments(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
 
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Document/GetAllAsync", this.Uri));
+                        return (IList<DocumentRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
 
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Document> documents = JsonConvert.DeserializeObject<IList<Document>>(data.Data.ToString());
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
 
-        //            return (IList<Document>)documents.Select(x => x.IsActive == true);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<DocumentRequest>>(data.Data.ToString());
 
-        //protected async Task<IList<SelectListItem>> GetCustomSelectListDocuments(int documentId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+                    IList<DocumentRequest> selectItems = new List<DocumentRequest>();
 
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
+                    foreach (DocumentRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new DocumentRequest() { DocumentId = item.DocumentId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
 
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Document/GetAllAsync", this.Uri));
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Document> documents = JsonConvert.DeserializeObject<IList<Document>>(data.Data.ToString());
+        protected async Task<IList<SelectListItem>> GetDocumentSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-        //            IList<SelectListItem> selectDocuments = new List<SelectListItem>();
-        //            foreach (Document? document in documents)
-        //            {
-        //                if (document.IsActive != true)
-        //                {
-        //                    continue;
-        //                }
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
 
-        //                if (document.DocumentId == documentId)
-        //                {
-        //                    selectDocuments.Add(new SelectListItem(document.Name, document.DocumentId.ToString(), true));
-        //                }
-        //                else
-        //                {
-        //                    selectDocuments.Add(new SelectListItem(document.Name, document.DocumentId.ToString()));
-        //                }
-        //            }
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Document/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
 
-        //            return selectDocuments;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<DocumentRequest> items = JsonConvert.DeserializeObject<IList<DocumentRequest>>(data.Data.ToString());
 
-        //protected async Task<IList<Document>> GetCustomDocuments(int documentId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
 
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
+                    foreach (DocumentRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.DocumentId.ToString()));
+                    }
 
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Document/GetAllAsync", this.Uri));
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
 
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Document> documents = JsonConvert.DeserializeObject<IList<Document>>(data.Data.ToString());
+        #region Getters
+        protected string Uri 
+        { 
+            get { return _AppSettings.UriLocal; }
+            //get { return _AppSettings.UriHiranyaloka; }
+            //get { return _AppSettings.UriProduction; }
+        }
+        
+        protected string ContentType { get { return _AppSettings.ContentType; } }
+        protected string MyToken { get { return _httpContextAccessor.HttpContext.Session.GetString("token"); } }
+        protected string MyUserId { get { return _httpContextAccessor.HttpContext.Session.GetString("EmailAddress"); } }
+        protected int Admin { get { return (int)_httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin"); } }
+        protected string TempPassword { get { return _AppSettings.TempPassword; } }
+        #endregion
 
-        //            return (IList<Document>)documents.Select(x => x.IsActive == true);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+        #region Events
+        protected async Task<IList<EventRequest>> GetEvents(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-        //protected async Task<Document> GetCustomDocument(int documentId)
-        //{
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
-        //        {
-        //            var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
-        //            client.DefaultRequestHeaders.Accept.Add(contentType);
-        //            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
 
-        //            if (client.DefaultRequestHeaders.Authorization.Parameter == null)
-        //            {
-        //                throw new Exception("Bearer token is null");
-        //            }
+                        return (IList<EventRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
 
-        //            HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Document/GetAllAsync", this.Uri));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
 
-        //            string stringData = response.Content.ReadAsStringAsync().Result;
-        //            ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-        //            IList<Document> documents = JsonConvert.DeserializeObject<IList<Document>>(data.Data.ToString());
-        //            Document returnDocument = null;
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<EventRequest>>(data.Data.ToString());
 
-        //            foreach (Document? document in documents)
-        //            {
-        //                if (document.DocumentId == documentId && document.IsActive == true)
-        //                {
-        //                    returnDocument = document;
-        //                }
-        //            }
+                    IList<EventRequest> selectItems = new List<EventRequest>();
 
-        //            return returnDocument;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+                    foreach (EventRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new EventRequest() { EventId = item.EventId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
 
-        //protected async Task<IList<SelectListItem>> GetCustomSelectListAreaDocuments(IList<AreaDocument> programEventAreaDocuments)
-        //{
-        //    try
-        //    {
-        //        var documents = await GetCustomSelectListDocuments(0);
-        //        IList<SelectListItem> selectItems;
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
-        //        selectItems = (from d in documents where !(from a in programEventAreaDocuments select a.DocumentId.ToString()).Contains(d.Value) select d).ToList();
+        protected async Task<IList<SelectListItem>> GetEventSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-        //        return selectItems;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
 
-        //protected async Task<IList<AreaDocument>> GetCustomSelectedAreaDocument(IList<AreaDocument> programEventAreaDocuments)
-        //{
-        //    try
-        //    {
-        //        var documents = await GetCustomDocuments(0);
-        //        IList<AreaDocument> areaDocuments = new List<AreaDocument>();
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Event/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
 
-        //        foreach (AreaDocument ad in programEventAreaDocuments)
-        //        {
-        //            Document d = documents.ToList().Find(x => x.DocumentId == ad.DocumentId && x.IsActive);
-        //            areaDocuments.Add(new AreaDocument { AreaId = ad.AreaId, DocumentId = ad.DocumentId, Document = d });
-        //        }
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<EventRequest> items = JsonConvert.DeserializeObject<IList<EventRequest>>(data.Data.ToString());
 
-        //        return areaDocuments;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (EventRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.EventId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Event Tasks
+        protected async Task<IList<EventTaskRequest>> GetEventTasks(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<EventTaskRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<EventTaskRequest>>(data.Data.ToString());
+
+                    IList<EventTaskRequest> selectItems = new List<EventTaskRequest>();
+
+                    foreach (EventTaskRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new EventTaskRequest() { EventTaskId = item.EventTaskId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetEventTaskSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventTask/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<EventTaskRequest> items = JsonConvert.DeserializeObject<IList<EventTaskRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (EventTaskRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.EventTaskId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Event Types
+        protected async Task<IList<EventTypeRequest>> GetEventTypes(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<EventTypeRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<EventTypeRequest>>(data.Data.ToString());
+
+                    IList<EventTypeRequest> selectItems = new List<EventTypeRequest>();
+
+                    foreach (EventTypeRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new EventTypeRequest() { EventTypeId = item.EventTypeId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetEventTypeSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventType/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<EventTypeRequest> items = JsonConvert.DeserializeObject<IList<EventTypeRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (EventTypeRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.EventTypeId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Roles
+        protected async Task<IList<RoleRequest>> GetRoles(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<RoleRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<RoleRequest>>(data.Data.ToString());
+
+                    IList<RoleRequest> selectItems = new List<RoleRequest>();
+
+                    foreach (RoleRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new RoleRequest() { RoleId = item.RoleId, PropertyId = item.PropertyId, Name = item.Name, Description = item.Description, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetRoleSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<RoleRequest> items = JsonConvert.DeserializeObject<IList<RoleRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (RoleRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.RoleId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Properties
+        protected async Task<IList<PropertyRequest>> GetProperties(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<PropertyRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<PropertyRequest>>(data.Data.ToString());
+
+                    IList<PropertyRequest> selectItems = new List<PropertyRequest>();
+
+                    foreach (PropertyRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new PropertyRequest() { PropertyId = item.PropertyId, Name = item.Name, City = item.City, Note = item.Note, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetPropertySelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Property/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<PropertyRequest> items = JsonConvert.DeserializeObject<IList<PropertyRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (PropertyRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.Name, item.PropertyId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Session
+        protected void SetStringSession(string key, string value)
+        {
+            _httpContextAccessor.HttpContext.Session.SetString(key.ToString(), value);
+        }
+
+        protected string GetStringSession(string key)
+        {
+            return _httpContextAccessor.HttpContext.Session.GetString(key.ToString());
+        }
+
+        protected void SetIntSession(string key, int value)
+        {
+            HttpContext.Session.SetInt32(key.ToString(), value);
+        }
+
+        protected int GetIntSession(string key)
+        {
+            return HttpContext.Session.GetInt32(key.ToString()) == null ? 0 : (int)HttpContext.Session.GetInt32(key.ToString());
+        }
+
+        protected int GetPropertyId()
+        {
+            return Convert.ToInt32(GetStringSession("PropertyId").ToString());
+        }
         #endregion
 
         #region Supply Items
@@ -1002,7 +988,7 @@ namespace TempleVolunteerClient
             }
         }
 
-        protected async Task<SupplyItemRequest> GetSupplyItem(int id, int propertyId, string userId)
+        protected async Task<IActionResult> GetSupplyItem(int id, int propertyId, string userId)
         {
             try
             {
@@ -1016,7 +1002,7 @@ namespace TempleVolunteerClient
                     {
                         TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
 
-                        return (SupplyItemRequest)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                        return RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
                     }
 
                     HttpResponseMessage response = await client.GetAsync(string.Format("{0}/SupplyItem/GetByIdAsync?id={1}&propertyId={2}&UserId='{3}", id, propertyId, userId));
@@ -1025,7 +1011,7 @@ namespace TempleVolunteerClient
                     ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
                     var item = JsonConvert.DeserializeObject<IList<SupplyItemRequest>>(data.Data.ToString());
 
-                    return (SupplyItemRequest)item;
+                    return (IActionResult)item;
                 }
             }
             catch (Exception ex)
@@ -1036,6 +1022,140 @@ namespace TempleVolunteerClient
         #endregion
 
         #region Staff
+        protected async Task<IList<StaffRequest>> GetStaff(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return (IList<StaffRequest>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var items = JsonConvert.DeserializeObject<IList<StaffRequest>>(data.Data.ToString());
+
+                    IList<StaffRequest> selectItems = new List<StaffRequest>();
+
+                    foreach (StaffRequest? item in items)
+                    {
+                        if (isActive)
+                        {
+                            selectItems.Add(new StaffRequest() { StaffId = item.StaffId, FirstName = item.FirstName, MiddleName = item.MiddleName, LastName = item.LastName, IsActive = isActive });
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        protected async Task<IList<SelectListItem>> GetStaffSelectList(int propertyId, string userId, bool isActive, bool isHidden)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = "You are not authorized. Contact the Adiministrator if you feel this is an error.";
+
+                        return ((IList<SelectListItem>)RedirectPermanent("/Custom/ModalPopUp?type=" + ModalType.Error));
+                    }
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?propertyId={1}&UserId='{2}", this.Uri, propertyId, userId));
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<StaffRequest> items = JsonConvert.DeserializeObject<IList<StaffRequest>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+
+                    foreach (StaffRequest? item in items)
+                    {
+                        selectItems.Add(new SelectListItem(item.FirstName, item.PropertyId.ToString()));
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Temple Properties
+        protected async Task<IList<SelectListItem>> GetTempleProperties(bool isActive, bool isTokenRequired)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+
+                    if (isTokenRequired)
+                    {
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+                        if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                        {
+                            throw new Exception("Bearer token is null");
+                        }
+                    }
+
+                    string email = GetStringSession("EmailAddress");
+                    int? propertyId = GetIntSession("PropertyId");
+
+                    MiscRequest misc = new MiscRequest();
+                    misc.UserId = !String.IsNullOrEmpty(email) ? email : "srfyssvolunteer@gmail.com";
+                    misc.PropertyId = (int)((propertyId == null || propertyId > 0) ? propertyId : 0);
+                    misc.DeleteById = 0;
+                    misc.GetById = 0;
+
+                    string stringData = JsonConvert.SerializeObject(misc);
+                    var contentData = new StringContent(stringData, Encoding.UTF8, this.ContentType);
+                    HttpResponseMessage response = await client.PostAsync(string.Format("{0}/Account/GetAllPropertiesAsync", this.Uri), contentData);
+                    stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    IList<PropertyViewModel> properties = JsonConvert.DeserializeObject<IList<PropertyViewModel>>(data.Data.ToString());
+
+                    IList<SelectListItem> selectItems = new List<SelectListItem>();
+                    selectItems.Add(new SelectListItem("", ""));
+                    foreach (PropertyViewModel property in properties)
+                    {
+                        if (isActive && property.IsActive)
+                        {
+                            selectItems.Add(new SelectListItem(property.Name, property.PropertyId.ToString()));
+                        }
+                    }
+
+                    return selectItems;
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
         #endregion
 
         #region Helpers

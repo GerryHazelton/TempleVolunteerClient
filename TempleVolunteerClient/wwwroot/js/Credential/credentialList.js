@@ -7,10 +7,12 @@ $(document).ready(function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
         $("#credentialModal").modal('show');
         $('#credentialModal').on('shown.bs.modal', function () {
+            $('#credentialId').html(data_row.credentialId);
             $('#credentialName').html(data_row.name);
             $('#credentialDescription').html(data_row.description);
             $('#credentialNote').html(data_row.note);
             $('#credentialIsActive').html(data_row.isActive ? "Yes" : "No");
+            $('#credentialIsHidden').html(data_row.isHidden ? "Yes" : "No");
             $('#credentialCreatedDate').html(data_row.createdDate);
             $('#credentialCreatedBy').html(data_row.createdBy);
             $('#credentialUpdatedDate').html(data_row.updatedDate);
@@ -33,6 +35,7 @@ function loadDataTable() {
         "columns": [
             { "data": "name", "width": "10%" },
             { "data": "description", "width": "10%" },
+            { "data": "note", "width": "10%" },
             {
                 "data": "credentialId",
                 "render": function (data) {
@@ -40,10 +43,10 @@ function loadDataTable() {
                                 <span style="cursor:pointer">
                                     <img id="viewId" class='img-75' src="/img/view.png" alt="View Credential Details" />
                                 </span>
-                                <a href="/Credential/Upsert?credentialId=${data}">
+                                <a style="text-decoration:none;" href="/Credential/Upsert?credentialId=${data}">
                                     <img class='img-75' src="/img/edit.png" alt="Edit Credential" />
                                 </a>
-                                <a href=# onclick=Delete('/Credential/Delete?credentialId='+${data})>
+                                <a style="text-decoration:none;" href=# onclick=Delete('/Credential/Delete?credentialId='+${data})>
                                     <img class='img-75' src="/img/delete.png" alt="Delete Credential" />
                                 </a>
                             </div>`;

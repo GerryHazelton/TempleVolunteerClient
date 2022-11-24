@@ -31,7 +31,7 @@ namespace TempleVolunteerClient
         }
 
         #region Upserts
-        [HttpGet("CommitteeUpsert")]
+        [HttpGet]
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> Upsert(int committeeId = 0)
         {
@@ -45,6 +45,7 @@ namespace TempleVolunteerClient
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
                 viewModel.Areas = await this.GetAreaSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                viewModel.Staff = await this.GetStaffSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
 
                 return View(viewModel);
             }
@@ -70,6 +71,7 @@ namespace TempleVolunteerClient
                     var committee = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
                     viewModel = _mapper.Map<CommitteeViewModel>(JsonConvert.DeserializeObject<CommitteeRequest>(committee.Data.ToString()));
                     viewModel.Areas = await this.GetAreaSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                    viewModel.Staff = await this.GetStaffSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
                 }
 
                 return View(viewModel);
@@ -82,7 +84,7 @@ namespace TempleVolunteerClient
             }
         }
 
-        [HttpPost("CommitteeUpsert")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(CommitteeViewModel viewModel)
         {
@@ -94,6 +96,9 @@ namespace TempleVolunteerClient
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
                 viewModel.Areas = await this.GetAreaSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                viewModel.Staff = await this.GetStaffSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+
+                return View(viewModel);
             }
 
             try
@@ -103,20 +108,28 @@ namespace TempleVolunteerClient
                     var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
-                    
+
+                    CommitteeRequest committeeRequest = _mapper.Map<CommitteeRequest>(viewModel);
+                    string stringData;
+                    StringContent contentData;
                     HttpResponseMessage response;
 
                     if (viewModel.CommitteeId == 0)
                     {
-                        var committeeRequest = _mapper.Map<CommitteeRequest>(viewModel);
-                        string stringData = JsonConvert.SerializeObject(committeeRequest);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        committeeRequest.CreatedDate = DateTime.UtcNow;
+                        committeeRequest.CreatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(committeeRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PostAsync(string.Format("{0}/Committee/PostAsync", this.Uri), contentData).Result;
                     }
                     else
                     {
-                        string stringData = JsonConvert.SerializeObject(viewModel);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        committeeRequest.CreatedDate = viewModel.CreatedDate;
+                        committeeRequest.CreatedBy = viewModel.CreatedBy;
+                        committeeRequest.UpdatedDate = DateTime.UtcNow;
+                        committeeRequest.UpdatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(committeeRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PutAsync(string.Format("{0}/Committee/PutAsync", this.Uri), contentData).Result;
                     }
 
@@ -128,13 +141,18 @@ namespace TempleVolunteerClient
 
                         return RedirectPermanent("/Committee/CommitteeModalPopUp?type=" + ModalType.Error);
                     }
+
+                    viewModel.Areas = await this.GetAreaSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
+                    viewModel.Staff = await this.GetStaffSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
                 }
 
-                return View(viewModel);
+                TempData["ModalMessage"] = viewModel.CommitteeId == 0 ? string.Format("Committee successfully created.") : string.Format("Committee successfully updated.");
+
+                return RedirectPermanent("/Committee/CommitteeModalPopUp?type=" + ModalType.Committee);
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: CommitteeUpsert(CommitteeViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
                 return RedirectPermanent("/Committee/CommitteeModalPopUp?type=" + ModalType.Error);
             };
@@ -163,13 +181,13 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Committee/CommitteeModalPopUp?type=" + ModalType.Error);
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Committee/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
                         TempData["ModalMessage"] = string.Format("Error occuured in CommitteeGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Committee/StaffModalPopUp");
+                        return RedirectPermanent("/Committee/CommitteeModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -194,7 +212,7 @@ namespace TempleVolunteerClient
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
-            StaffViewModel viewModel = new StaffViewModel();
+            CommitteeViewModel viewModel = new CommitteeViewModel();
 
             try
             {
@@ -209,7 +227,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Committee/CommitteeModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Committee?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -237,7 +255,7 @@ namespace TempleVolunteerClient
         #endregion
 
         [HttpDelete]
-        public async Task<IActionResult> CommitteeDelete(int committeeId, int propertyId)
+        public async Task<IActionResult> Delete(int committeeId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -256,7 +274,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Committee/CommitteeModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Committee/DeleteAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, committeeId, propertyId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Committee/DeleteAsync?committeeId={1}&propertyId={2}&userId='{3}'", this.Uri, committeeId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

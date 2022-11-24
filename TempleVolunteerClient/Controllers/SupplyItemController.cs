@@ -161,15 +161,15 @@ namespace TempleVolunteerClient.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    bool updateImage = viewModel.SupplyItemImageFile != null ? true : false;
+                    bool updateImage = viewModel.SupplyItemImage != null ? true : false;
                     MemoryStream ms = null;
                     var supplyItem = _mapper.Map<SupplyItemRequest>(viewModel);
 
                     if (updateImage)
                     {
                         string wwwRootPath = _environment.WebRootPath;
-                        string fileName = Path.GetFileNameWithoutExtension(viewModel.SupplyItemImageFile.FileName);
-                        string extension = Path.GetExtension(viewModel.SupplyItemImageFile.FileName);
+                        string fileName = Path.GetFileNameWithoutExtension(viewModel.SupplyItemImage.FileName);
+                        string extension = Path.GetExtension(viewModel.SupplyItemImage.FileName);
                         fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
                         string path = Path.Combine(wwwRootPath + "\\img\\", fileName);
                         FileStream fs = null;
@@ -177,8 +177,6 @@ namespace TempleVolunteerClient.Controllers
 
                         using (fs = System.IO.File.Create(path))
                         {
-                            //await viewModel.SupplyItemImageFile.CopyToAsync(fs);
-
                             using (ms = new MemoryStream())
                             {
                                 int read;
@@ -192,30 +190,15 @@ namespace TempleVolunteerClient.Controllers
 
                         System.IO.File.Delete(path);
                     }
-                    else
-                    {
-                        if (viewModel.SupplyItemImageFile != null)
-                        {
-                            //viewModel.SupplyItemPrevImage = viewModel.SupplyItemImage;
-                        }
-                    }
 
                     if (viewModel.SupplyItemId == 0)
                     {
                         using (HttpClient client = new HttpClient())
                         {
-                            if (updateImage)
-                            {
-                                //supplyItem.SupplyItemImageFileName = viewModel.SupplyItemImageFile.FileName;
-                                //supplyItem.SupplyItemImage = ms.ToArray();
-                            }
-
                             supplyItem.CreatedBy = GetStringSession("EmailAddress");
                             supplyItem.CreatedDate = DateTime.Now;
-                            //supplyItem.Password = this.TempPassword;
                             var data = JsonConvert.SerializeObject(supplyItem);
                             var content = new StringContent(data, Encoding.UTF8, this.ContentType);
-
                             var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                             client.DefaultRequestHeaders.Accept.Add(contentType);
                             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
@@ -243,26 +226,10 @@ namespace TempleVolunteerClient.Controllers
                     {
                         using (HttpClient client = new HttpClient())
                         {
-                            if (!updateImage)
-                            {
-                                //if (viewModel.SupplyItemPrevImage != null)
-                                //{
-                                //    supplyItem.SupplyItemImageFileName = viewModel.SupplyItemFileName;
-                                //    //supplyItem.SupplyItemImage = viewModel.SupplyItemPrevImage;
-                                //}
-                            }
-                            else
-                            {
-                                //supplyItem.SupplyItemImageFileName = viewModel.SupplyItemImageFile.FileName;
-                                //supplyItem.SupplyItemImage = ms.ToArray();
-                            }
-
                             supplyItem.UpdatedBy = GetStringSession("EmailAddress");
                             supplyItem.UpdatedDate = DateTime.Now;
-                            //supplyItem.UnlockUser = viewModel.UnlockUser;
                             var data = JsonConvert.SerializeObject(supplyItem);
                             var content = new StringContent(data, Encoding.UTF8, this.ContentType);
-
                             var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                             client.DefaultRequestHeaders.Accept.Add(contentType);
                             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
@@ -289,7 +256,6 @@ namespace TempleVolunteerClient.Controllers
                 }
                 else
                 {
-                    //viewModel.RoleList = await this.GetCustomRoles(viewModel.RoleId);
                     return View(viewModel);
                 }
 
@@ -307,7 +273,7 @@ namespace TempleVolunteerClient.Controllers
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> SupplyItemGet(bool registerCheck = false)
         {
-            //if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+           if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
             try
             {

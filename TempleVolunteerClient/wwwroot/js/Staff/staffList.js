@@ -7,8 +7,9 @@ $(staff).ready(function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
         $("#staffModal").modal('show');
         $('#staffModal').on('shown.bs.modal', function () {
-            $('#staffName').html(data_row.name);
-            $('#staffDescription').html(data_row.description);
+            $('#staffFirstName').html(data_row.firstName);
+            $('#staffMiddleName').html(data_row.middleName);
+            $('#staffLastName').html(data_row.lastName);
             $('#staffNote').html(data_row.note);
             $('#staffIsActive').html(data_row.isActive ? "Yes" : "No");
             $('#staffCreatedDate').html(data_row.createdDate);

@@ -11,6 +11,10 @@ namespace TempleVolunteerClient
         [Display(Name = "First Name")]
         public string? FirstName { get; set; }
 
+        [MaxLength(25, ErrorMessage = "Middle Name cannot exceed 25 characters.")]
+        [Display(Name = "Last Name")]
+        public string? MiddleName { get; set; }
+
         [Required]
         [MaxLength(25, ErrorMessage = "Last Name cannot exceed 25 characters.")]
         [Display(Name = "Last Name")]

@@ -14,6 +14,15 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px">
             <div class="col-4">
+                <label asp-for="MiddleName"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="MiddleName" class="form-control" />
+                <span asp-validation-for="MiddleName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
                 <label asp-for="LastName"></label>
             </div>
             <div class="col-8">

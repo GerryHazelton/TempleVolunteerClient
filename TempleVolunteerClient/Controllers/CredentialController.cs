@@ -91,6 +91,8 @@ namespace TempleVolunteerClient
                 viewModel.CreatedDate = DateTime.UtcNow;
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
+
+                return View(viewModel);
             }
 
             try
@@ -101,19 +103,27 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
+                    CredentialRequest credentialRequest = _mapper.Map<CredentialRequest>(viewModel);
+                    string stringData;
+                    StringContent contentData;
                     HttpResponseMessage response;
 
                     if (viewModel.CredentialId == 0)
                     {
-                        var credentialRequest = _mapper.Map<CredentialRequest>(viewModel);
-                        string stringData = JsonConvert.SerializeObject(credentialRequest);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        credentialRequest.CreatedDate = DateTime.UtcNow;
+                        credentialRequest.CreatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(credentialRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PostAsync(string.Format("{0}/Credential/PostAsync", this.Uri), contentData).Result;
                     }
                     else
                     {
-                        string stringData = JsonConvert.SerializeObject(viewModel);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        credentialRequest.CreatedDate = viewModel.CreatedDate;
+                        credentialRequest.CreatedBy = viewModel.CreatedBy;
+                        credentialRequest.UpdatedDate = DateTime.UtcNow;
+                        credentialRequest.UpdatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(credentialRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PutAsync(string.Format("{0}/Credential/PutAsync", this.Uri), contentData).Result;
                     }
 
@@ -127,7 +137,9 @@ namespace TempleVolunteerClient
                     }
                 }
 
-                return View(viewModel);
+                TempData["ModalMessage"] = viewModel.CredentialId == 0 ? string.Format("Credential successfully created.") : string.Format("Credential successfully updated.");
+
+                return RedirectPermanent("/Credential/CredentialModalPopUp?type=" + ModalType.Credential);
             }
             catch (Exception ex)
             {
@@ -140,7 +152,7 @@ namespace TempleVolunteerClient
 
         #region Getters
         [HttpGet]
-        //[AutoValidateAntiforgeryToken]
+        [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> CredentialGet(bool isActive = true)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
@@ -187,7 +199,7 @@ namespace TempleVolunteerClient
 
         [HttpGet]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> CredentialGetById(int credentialId)
+        public async Task<IActionResult> CredentialGetById(int staffId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -206,7 +218,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Credential/CredentialModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Credential?id={1}&&userId", this.Uri, credentialId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Credential?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -234,7 +246,7 @@ namespace TempleVolunteerClient
         #endregion
 
         [HttpDelete]
-        public async Task<IActionResult> CredentialDelete(int credentialId, int propertyId)
+        public async Task<IActionResult> Delete(int credentialId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -253,7 +265,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Credential/CredentialModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Credential/DeleteAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, credentialId, propertyId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Credential/DeleteAsync?credentialId={1}&propertyId={2}&userId='{3}'", this.Uri, credentialId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

@@ -2,15 +2,17 @@
 
 $(document).ready(function () {
     loadDataTable();
-    debugger;
+
     $('#categoryTable tbody').on('click', 'span', function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
         $("#categoryModal").modal('show');
         $('#categoryModal').on('shown.bs.modal', function () {
+            $('#categoryId').html(data_row.categoryId);
             $('#categoryName').html(data_row.name);
             $('#categoryDescription').html(data_row.description);
             $('#categoryNote').html(data_row.note);
             $('#categoryIsActive').html(data_row.isActive ? "Yes" : "No");
+            $('#categoryIsHidden').html(data_row.isActive ? "Yes" : "No");
             $('#categoryCreatedDate').html(data_row.createdDate);
             $('#categoryCreatedBy').html(data_row.createdBy);
             $('#categoryUpdatedDate').html(data_row.updatedDate);
@@ -27,7 +29,7 @@ function loadDataTable() {
             "datatype": "json",
             "serverSide": false,
             "error": function () {
-                window.location.href = "/Account/CategoryModalPopUp"; 
+                window.location.href = "/Account/CategoryModalPopUp";
             }
         },
         "columns": [
@@ -40,10 +42,10 @@ function loadDataTable() {
                                 <span style="cursor:pointer">
                                     <img id="viewId" class='img-75' src="/img/view.png" alt="View Category Details" />
                                 </span>
-                                <a href="/Category/CategoryUpsert?categoryId=${data}">
+                                <a style="text-decoration:none;" href="/Category/Upsert?categoryId=${data}">
                                     <img class='img-75' src="/img/edit.png" alt="Edit Category" />
                                 </a>
-                                <a href=# onclick=Delete('/Category/CategoryDelete?categoryId='+${data})>
+                                <a style="text-decoration:none;" href=# onclick=Delete('/Category/Delete?categoryId='+${data})>
                                     <img class='img-75' src="/img/delete.png" alt="Delete Category" />
                                 </a>
                             </div>`;

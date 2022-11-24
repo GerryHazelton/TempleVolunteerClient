@@ -1,15 +1,15 @@
 ﻿@using TempleVolunteerClient
-@model CredentialViewModel
+@model EventTaskViewModel
 
 <br />
-<h2 class="text-info">@(Model.CredentialId != 0 ? "Edit" : "Create") Credential</h2>
+<h2 class="text-info">@(Model.EventTaskId != 0 ? "Edit" : "Create") EventTask</h2>
 <br />
 
 <div class="border container" style="padding:30px;">
-    @using (@Html.BeginForm("Upsert", "Credential", FormMethod.Post, new { id = "credentialForm" }))
+    @using (@Html.BeginForm("Upsert", "EventTask", FormMethod.Post, new { id = "eventTaskForm" }))
     {
         <input type="hidden" asp-for="@Model.PropertyId" />
-        <input id="hiddenId" type="hidden" asp-for="@Model.CredentialId" />
+        <input id="hiddenId" type="hidden" asp-for="@Model.EventTaskId" />
         <input type="hidden" asp-for="@Model.UpdatedBy" />
         <input type="hidden" asp-for="@Model.UpdatedDate" />
         <input type="hidden" asp-for="@Model.CreatedBy" />
@@ -21,7 +21,7 @@
                 <label asp-for="Name" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input id="nameId" idVal="@Model.CredentialId" asp-for="Name" class="form-control" />
+                <input id="nameId" idVal="@Model.EventTaskId" asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
@@ -62,54 +62,56 @@
         <div class="form-group row">
             <div class="col-3 offset-3">
                 <button id="buttonId" type="submit" class="btn btn-primary form-control">
-                    @(Model.CredentialId != 0 ? "Update" : "Create")
+                    @(Model.EventTaskId != 0 ? "Update" : "Create")
                 </button>
             </div>
             <div class="col-3">
-                <a asp-action="Index" asp-controller="Credential" class="btn btn-primary form-control">Retrun</a>
+                <a asp-action="Index" asp-controller="EventTask" class="btn btn-primary form-control">Retrun</a>
             </div>
         </div>
     }
 </div>
 
-@section Scripts{
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-    <script>
-        $(document).ready(function () {
-            $("#nameId").focus();
+@section Scripts{    
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+<script>
+    $(document).ready(function () {
+        $('.listbox').multiselect({
+            includeSelectAllOption: true
+        });
+        
+        $("#nameId").focus();
 
-            $("#credentialForm").on("submit", function (e) {
-                e.preventDefault();
-                $.ajax({
-                    url: '/Credential/CredentialGet/',
-                    type: 'GET',
-                    dataType: "json",
-                    success: validateData,
-                    error: function (result) {
-                        alert('error');
+        $("#eventTaskForm").on("submit", function (e) {
+            e.preventTaskDefault();
+            $.ajax({
+                url: '/EventTask/EventTaskGet/',
+                type: 'GET',
+                dataType: "json",
+                success: validateData,
+                error: function (result) {
+                    alert('error');
+                }
+            });
+
+            function validateData(data) {
+                let exists = false;
+                $.each(data.data, function (i, item) {
+                    exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.eventTaskId) != parseInt($("#hiddenId").val())));
+                        
+                    if (exists) {
+                        return false;
                     }
                 });
 
-                function validateData(data) {
-                    let exists = false;
-                    $.each(data.data, function (i, item) {
-                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.credentialId) != parseInt($("#hiddenId").val())));
-
-                        if (exists) {
-                            return false;
-                        }
-                    });
-
-                    if (exists) {
-                        swal("This credential already exists!", "");
-                    }
-                    else {
-                        $("#credentialForm").unbind("submit").submit();
-                    }
-                };
-            });
+                if (exists) {
+                    swal("This eventTask already exists!", "");
+                }
+                else {
+                    $("#eventTaskForm").unbind("submit").submit();
+                }
+            };
         });
-    </script>
+    });
+</script>
 }
