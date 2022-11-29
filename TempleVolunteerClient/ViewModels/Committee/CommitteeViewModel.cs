@@ -14,10 +14,10 @@ namespace TempleVolunteerClient
         public string Name { get; set; }
 
         [Display(Name = "Description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Display(Name = "Note")]
-        public string Note { get; set; }
+        public string? Note { get; set; }
 
         [Display(Name = "Area")]
         public ICollection<SelectListItem> Areas { get; set; }
@@ -26,11 +26,5 @@ namespace TempleVolunteerClient
         [Display(Name = "Staff")]
         public ICollection<SelectListItem> Staff { get; set; }
         public int[] StaffIds { get; set; }
-
-        public CommitteeViewModel()
-        {
-            this.Areas = new HashSet<SelectListItem>();
-            this.Staff = new HashSet<SelectListItem>();
-        }
     }
 }

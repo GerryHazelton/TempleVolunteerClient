@@ -44,6 +44,70 @@ input[type=file] {
     color: transparent;
 }
 
+.img-100 img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.img-90 img {
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.img-75 img {
+    max-width: 75%;
+    max-height: 75%;
+}
+
+.img-65 img {
+    max-width: 65%;
+    max-height: 65%;
+}
+
+.img-50 img {
+    max-width: 50%;
+    max-height: 50%;
+}
+
+.img-25 img {
+    max-width: 25%;
+    max-height: 25%;
+}
+
+.img-35 img {
+    max-width: 35%;
+    max-height: 35%;
+}
+
+.img-100 embed {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.img-75 embed {
+    max-width: 75%;
+    max-height: 75%;
+}
+
+.img-65 embed {
+    max-width: 65%;
+    max-height: 65%;
+}
+
+.img-50 embed {
+    max-width: 50%;
+    max-height: 50%;
+}
+
+.img-25 embed {
+    max-width: 25%;
+    max-height: 25%;
+}
+
+.img-35 embed {
+    max-width: 35%;
+    max-height: 35%;
+}
 
 
 

@@ -10,7 +10,7 @@
         <h2 class="text-info">Manage Volunteers</h2>
     </div>
     <div class="col-3 offset-3">
-        <a asp-action="StaffUpsert" asp-controller="Staff" class="btn btn-info form-control text-white">
+        <a asp-action="Upsert" asp-controller="Staff" class="btn btn-info form-control text-white">
             Add
         </a>
     </div>
@@ -22,6 +22,7 @@
                     <th>First Name</th>
                     <th>Middle Name</th>
                     <th>Last Name</th>
+                    <th>Is Active</th>
                     <th></th>
                 </tr>
             </thead>
@@ -110,13 +111,12 @@
 </div>
 
 @section Scripts{
-    <script id="staffListId" src="~/js/Staff/staffList.js" logged-in-user=@Model.LoggedInStaff></script>
+    <script id="staffListId" src="~/js/Staff/staffList.js"></script>
     <script>
         $(document).ready(function () {
-            //document.querySelector("#staffId").onclick = function (e) {
+            //document.querySelector("#supplyId").onclick = function (e) {
             //    e.preventDefault();
             //}
         });
     </script>
 }
-

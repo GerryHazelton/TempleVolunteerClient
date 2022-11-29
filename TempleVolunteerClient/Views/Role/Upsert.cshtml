@@ -72,42 +72,44 @@
     }
 </div>
 
-@section Scripts{    
-@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-<script>
-    $(document).ready(function () {
-        $("#nameId").focus();
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $("#nameId").focus();
 
-        $("#roleForm").on("submit", function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: '/Role/RoleGet/',
-                type: 'GET',
-                dataType: "json",
-                success: validateData,
-                error: function (result) {
-                    alert('error');
-                }
-            });
-
-            function validateData(data) {
-                let exists = false;
-                $.each(data.data, function (i, item) {
-                    exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.roleId) != parseInt($("#hiddenId").val())));
-                        
-                    if (exists) {
-                        return false;
+            $("#roleForm").on("submit", function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/Role/RoleGet/',
+                    type: 'GET',
+                    dataType: "json",
+                    success: validateData,
+                    error: function (result) {
+                        alert('error');
                     }
                 });
 
-                if (exists) {
-                    swal("This role already exists!", "");
-                }
-                else {
-                    $("#roleForm").unbind("submit").submit();
-                }
-            };
+                function validateData(data) {
+                    let exists = false;
+                    $.each(data.data, function (i, item) {
+                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.roleId) != parseInt($("#hiddenId").val())));
+
+                        if (exists) {
+                            return false;
+                        }
+                    });
+
+                    if (exists) {
+                        swal("This Role already exists!", "");
+                    }
+                    else {
+                        $("#roleForm").unbind("submit").submit();
+                    }
+                };
+            });
         });
-    });
-</script>
+    </script>
 }

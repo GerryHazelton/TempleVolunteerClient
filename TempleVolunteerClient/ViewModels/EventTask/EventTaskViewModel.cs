@@ -8,13 +8,13 @@ namespace TempleVolunteerClient
     {
         public int EventTaskId { get; set; }
         
-        [Display(Name = "Event Tasks")]
+        [Display(Name = "Event Task")]
         public string Name { get; set; }
 
         [Display(Name = "Description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Display(Name = "Note")]
-        public string Note { get; set; }
+        public string? Note { get; set; }
     }
 }

@@ -1,16 +1,21 @@
 ﻿var dataTable;
 
-$(event).ready(function () {
+$(document).ready(function () {
     loadDataTable();
-    debugger;
+
     $('#eventTable tbody').on('click', 'span', function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
         $("#eventModal").modal('show');
         $('#eventModal').on('shown.bs.modal', function () {
+            $('#eventId').html(data_row.eventId);
             $('#eventName').html(data_row.name);
             $('#eventDescription').html(data_row.description);
             $('#eventNote').html(data_row.note);
+            $('#eventStartDate').html(data_row.startDate);
+            $('#eventEndDate').html(data_row.endDate);
+            $('#eventIndefinite').html(data_row.indifinite);
             $('#eventIsActive').html(data_row.isActive ? "Yes" : "No");
+            $('#eventIsHidden').html(data_row.isHidden ? "Yes" : "No");
             $('#eventCreatedDate').html(data_row.createdDate);
             $('#eventCreatedBy').html(data_row.createdBy);
             $('#eventUpdatedDate').html(data_row.updatedDate);
@@ -27,12 +32,15 @@ function loadDataTable() {
             "datatype": "json",
             "serverSide": false,
             "error": function () {
-                window.location.href = "/Account/EventModalPopUp"; 
+                window.location.href = "/Account/ErrorModalPopUp";
             }
         },
         "columns": [
             { "data": "name", "width": "10%" },
             { "data": "description", "width": "10%" },
+            { "data": "note", "width": "10%" },
+            { "data": "startDate", "width": "10%" },
+            { "data": "endDate", "width": "10%" },
             {
                 "data": "eventId",
                 "render": function (data) {
@@ -40,10 +48,10 @@ function loadDataTable() {
                                 <span style="cursor:pointer">
                                     <img id="viewId" class='img-75' src="/img/view.png" alt="View Event Details" />
                                 </span>
-                                <a href="/Event/EventUpsert?eventId=${data}">
+                                <a style="text-decoration:none;" href="/Event/Upsert?eventId=${data}">
                                     <img class='img-75' src="/img/edit.png" alt="Edit Event" />
                                 </a>
-                                <a href=# onclick=Delete('/Event/EventDelete?eventId='+${data})>
+                                <a style="text-decoration:none;" href=# onclick=Delete('/Event/Delete?eventId='+${data})>
                                     <img class='img-75' src="/img/delete.png" alt="Delete Event" />
                                 </a>
                             </div>`;

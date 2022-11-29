@@ -29,7 +29,7 @@ function loadDataTable() {
             "datatype": "json",
             "serverSide": false,
             "error": function () {
-                window.location.href = "/Account/CommitteeModalPopUp";
+                window.location.href = "/Account/ErrorModalPopUp";
             }
         },
         "columns": [

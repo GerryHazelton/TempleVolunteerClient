@@ -27,12 +27,14 @@ function loadDataTable() {
             "datatype": "json",
             "serverSide": false,
             "error": function () {
-                window.location.href = "/Account/MessageModalPopUp"; 
+                window.location.href = "/Account/ErrorModalPopUp"; 
             }
         },
         "columns": [
-            { "data": "name", "width": "10%" },
-            { "data": "description", "width": "10%" },
+            { "data": "from", "width": "10%" },
+            { "data": "to", "width": "10%" },
+            { "data": "subject", "width": "10%" },
+            { "data": "createdDate", "width": "10%" },
             {
                 "data": "messageId",
                 "render": function (data) {

@@ -7,10 +7,10 @@
 <br />
 <div class="container row p-0 m-0">
     <div class="col-6">
-        <h2 class="text-info">Manage Event Types</h2>
+        <h2 class="text-info">Manage Event Tasks</h2>
     </div>
     <div class="col-3 offset-3">
-        <a asp-action="EventTaskUpsert" asp-controller="EventTask" class="btn btn-info form-control text-white">
+        <a asp-action="Upsert" asp-controller="EventTask" class="btn btn-info form-control text-white">
             Add
         </a>
     </div>
@@ -20,8 +20,8 @@
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
+                    <th>Note</th>
                     <th></th>
-
                 </tr>
             </thead>
         </table>
@@ -32,13 +32,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="text-info">EventTask Details</h3>
+                <h3 class="text-info">Event Task Details</h3>
             </div>
             <div class="modal-body">
                 <br />
                 <label style="color:blue" class="font-weight-bold">EventTask ID:</label>&nbsp;<span id="eventTaskId"></span>
                 <br />
                 <label style="color:blue" class="font-weight-bold">Name:</label>&nbsp;<span id="eventTaskName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Description:</label>&nbsp;<span id="eventTaskDescription"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Note:</label>&nbsp;<span id="eventTaskNote"></span>
                 <br />
                 <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="eventTaskIsActive"></span>
                 <br />
@@ -64,7 +68,7 @@
     <script>
         $(document).ready(function () {
             //document.querySelector("#eventTaskAdd").onclick = function (e) {
-            //    e.preventTaskDefault();
+            //    e.preventDefault();
             //}
         });
     </script>

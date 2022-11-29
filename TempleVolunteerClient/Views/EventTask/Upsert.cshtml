@@ -72,46 +72,44 @@
     }
 </div>
 
-@section Scripts{    
-@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-<script>
-    $(document).ready(function () {
-        $('.listbox').multiselect({
-            includeSelectAllOption: true
-        });
-        
-        $("#nameId").focus();
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $("#nameId").focus();
 
-        $("#eventTaskForm").on("submit", function (e) {
-            e.preventTaskDefault();
-            $.ajax({
-                url: '/EventTask/EventTaskGet/',
-                type: 'GET',
-                dataType: "json",
-                success: validateData,
-                error: function (result) {
-                    alert('error');
-                }
-            });
-
-            function validateData(data) {
-                let exists = false;
-                $.each(data.data, function (i, item) {
-                    exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.eventTaskId) != parseInt($("#hiddenId").val())));
-                        
-                    if (exists) {
-                        return false;
+            $("#eventTaskForm").on("submit", function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/EventTask/EventTaskGet/',
+                    type: 'GET',
+                    dataType: "json",
+                    success: validateData,
+                    error: function (result) {
+                        alert('error');
                     }
                 });
 
-                if (exists) {
-                    swal("This eventTask already exists!", "");
-                }
-                else {
-                    $("#eventTaskForm").unbind("submit").submit();
-                }
-            };
+                function validateData(data) {
+                    let exists = false;
+                    $.each(data.data, function (i, item) {
+                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.eventTaskId) != parseInt($("#hiddenId").val())));
+
+                        if (exists) {
+                            return false;
+                        }
+                    });
+
+                    if (exists) {
+                        swal("This Event Task already exists!", "");
+                    }
+                    else {
+                        $("#eventTaskForm").unbind("submit").submit();
+                    }
+                };
+            });
         });
-    });
-</script>
+    </script>
 }

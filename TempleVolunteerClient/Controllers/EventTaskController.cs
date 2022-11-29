@@ -31,15 +31,15 @@ namespace TempleVolunteerClient
         }
 
         #region Upserts
-        [HttpGet("EventTaskUpsert")]
+        [HttpGet]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> Upsert(int eventTaskTaskId = 0)
+        public async Task<IActionResult> Upsert(int eventTaskId = 0)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
             EventTaskViewModel viewModel = new EventTaskViewModel();
 
-            if (eventTaskTaskId == 0)
+            if (eventTaskId == 0)
             {
                 viewModel.CreatedDate = DateTime.UtcNow;
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
@@ -56,7 +56,7 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventTask/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, eventTaskTaskId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventTask/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, eventTaskId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
                     var responseDeserialized = JsonConvert.DeserializeObject<EventTaskResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
@@ -66,8 +66,8 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/EventTask/EventTaskModalPopUp?type=" + ModalType.Error);
                     }
 
-                    var eventTaskTask = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
-                    viewModel = _mapper.Map<EventTaskViewModel>(JsonConvert.DeserializeObject<EventTaskRequest>(eventTaskTask.Data.ToString()));
+                    var eventTask = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
+                    viewModel = _mapper.Map<EventTaskViewModel>(JsonConvert.DeserializeObject<EventTaskRequest>(eventTask.Data.ToString()));
                 }
 
                 return View(viewModel);
@@ -80,7 +80,7 @@ namespace TempleVolunteerClient
             }
         }
 
-        [HttpPost("EventTaskUpsert")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(EventTaskViewModel viewModel)
         {
@@ -91,6 +91,8 @@ namespace TempleVolunteerClient
                 viewModel.CreatedDate = DateTime.UtcNow;
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
+
+                return View(viewModel);
             }
 
             try
@@ -101,19 +103,27 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
+                    EventTaskRequest eventTaskRequest = _mapper.Map<EventTaskRequest>(viewModel);
+                    string stringData;
+                    StringContent contentData;
                     HttpResponseMessage response;
 
                     if (viewModel.EventTaskId == 0)
                     {
-                        var eventTaskTaskRequest = _mapper.Map<EventTaskRequest>(viewModel);
-                        string stringData = JsonConvert.SerializeObject(eventTaskTaskRequest);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        eventTaskRequest.CreatedDate = DateTime.UtcNow;
+                        eventTaskRequest.CreatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(eventTaskRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PostAsync(string.Format("{0}/EventTask/PostAsync", this.Uri), contentData).Result;
                     }
                     else
                     {
-                        string stringData = JsonConvert.SerializeObject(viewModel);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        eventTaskRequest.CreatedDate = viewModel.CreatedDate;
+                        eventTaskRequest.CreatedBy = viewModel.CreatedBy;
+                        eventTaskRequest.UpdatedDate = DateTime.UtcNow;
+                        eventTaskRequest.UpdatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(eventTaskRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PutAsync(string.Format("{0}/EventTask/PutAsync", this.Uri), contentData).Result;
                     }
 
@@ -127,11 +137,13 @@ namespace TempleVolunteerClient
                     }
                 }
 
-                return View(viewModel);
+                TempData["ModalMessage"] = viewModel.EventTaskId == 0 ? string.Format("Event Task successfully created.") : string.Format("Event Task successfully updated.");
+
+                return RedirectPermanent("/EventTask/EventTaskModalPopUp?type=" + ModalType.EventTask);
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: EventTaskUpsert(EventTaskViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
                 return RedirectPermanent("/EventTask/EventTaskModalPopUp?type=" + ModalType.Error);
             };
@@ -140,7 +152,7 @@ namespace TempleVolunteerClient
 
         #region Getters
         [HttpGet]
-        //[AutoValidateAntiforgeryToken]
+        [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> EventTaskGet(bool isActive = true)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
@@ -160,13 +172,13 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/EventTask/EventTaskModalPopUp?type=" + ModalType.Error);
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventTask/GetAllAsync?propertyId={1}&userId={2}", this.Uri, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
                         TempData["ModalMessage"] = string.Format("Error occuured in EventTaskGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/EventTask/StaffModalPopUp");
+                        return RedirectPermanent("/EventTask/EventTaskModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -191,7 +203,7 @@ namespace TempleVolunteerClient
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
-            StaffViewModel viewModel = new StaffViewModel();
+            EventTaskViewModel viewModel = new EventTaskViewModel();
 
             try
             {
@@ -206,7 +218,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/EventTask/EventTaskModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/EventTask?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -234,7 +246,7 @@ namespace TempleVolunteerClient
         #endregion
 
         [HttpDelete]
-        public async Task<IActionResult> EventTaskDelete(int eventTaskTaskId, int propertyId)
+        public async Task<IActionResult> Delete(int eventTaskId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -253,7 +265,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/EventTask/EventTaskModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/EventTask/DeleteAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, eventTaskTaskId, propertyId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/EventTask/DeleteAsync?eventTaskId={1}&propertyId={2}&userId='{3}'", this.Uri, eventTaskId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

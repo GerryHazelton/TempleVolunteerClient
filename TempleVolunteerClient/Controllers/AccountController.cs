@@ -628,6 +628,14 @@ namespace TempleVolunteerClient
             
             return View(viewModel);
         }
+
+        public IActionResult ErrorModalPopUp()
+        {
+            ModalViewModel viewModel = new ModalViewModel { ModalType = ModalType.Error };
+            TempData["ModalMessage"] = string.Format("A system error occurred. Please contact one of the temple admins.");
+
+            return View(viewModel);
+        }
         #endregion
     }
 }

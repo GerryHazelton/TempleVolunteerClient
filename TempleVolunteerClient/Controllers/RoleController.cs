@@ -31,15 +31,15 @@ namespace TempleVolunteerClient
         }
 
         #region Upserts
-        [HttpGet("RoleUpsert")]
+        [HttpGet]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> Upsert(int roleTaskId = 0)
+        public async Task<IActionResult> Upsert(int roleId = 0)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
             RoleViewModel viewModel = new RoleViewModel();
 
-            if (roleTaskId == 0)
+            if (roleId == 0)
             {
                 viewModel.CreatedDate = DateTime.UtcNow;
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
@@ -56,7 +56,7 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, roleTaskId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, roleId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
                     var responseDeserialized = JsonConvert.DeserializeObject<RoleResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
@@ -66,8 +66,8 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Role/RoleModalPopUp?type=" + ModalType.Error);
                     }
 
-                    var roleTask = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
-                    viewModel = _mapper.Map<RoleViewModel>(JsonConvert.DeserializeObject<RoleRequest>(roleTask.Data.ToString()));
+                    var role = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
+                    viewModel = _mapper.Map<RoleViewModel>(JsonConvert.DeserializeObject<RoleRequest>(role.Data.ToString()));
                 }
 
                 return View(viewModel);
@@ -80,7 +80,7 @@ namespace TempleVolunteerClient
             }
         }
 
-        [HttpPost("RoleUpsert")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(RoleViewModel viewModel)
         {
@@ -91,6 +91,8 @@ namespace TempleVolunteerClient
                 viewModel.CreatedDate = DateTime.UtcNow;
                 viewModel.CreatedBy = GetStringSession("EmailAddress");
                 viewModel.PropertyId = GetIntSession("PropertyId");
+
+                return View(viewModel);
             }
 
             try
@@ -101,19 +103,27 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
+                    RoleRequest roleRequest = _mapper.Map<RoleRequest>(viewModel);
+                    string stringData;
+                    StringContent contentData;
                     HttpResponseMessage response;
 
                     if (viewModel.RoleId == 0)
                     {
-                        var roleTaskRequest = _mapper.Map<RoleRequest>(viewModel);
-                        string stringData = JsonConvert.SerializeObject(roleTaskRequest);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        roleRequest.CreatedDate = DateTime.UtcNow;
+                        roleRequest.CreatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(roleRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PostAsync(string.Format("{0}/Role/PostAsync", this.Uri), contentData).Result;
                     }
                     else
                     {
-                        string stringData = JsonConvert.SerializeObject(viewModel);
-                        var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
+                        roleRequest.CreatedDate = viewModel.CreatedDate;
+                        roleRequest.CreatedBy = viewModel.CreatedBy;
+                        roleRequest.UpdatedDate = DateTime.UtcNow;
+                        roleRequest.UpdatedBy = this.GetStringSession("EmailAddress");
+                        stringData = JsonConvert.SerializeObject(roleRequest);
+                        contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
                         response = client.PutAsync(string.Format("{0}/Role/PutAsync", this.Uri), contentData).Result;
                     }
 
@@ -127,11 +137,13 @@ namespace TempleVolunteerClient
                     }
                 }
 
-                return View(viewModel);
+                TempData["ModalMessage"] = viewModel.RoleId == 0 ? string.Format("Role successfully created.") : string.Format("Role successfully updated.");
+
+                return RedirectPermanent("/Role/RoleModalPopUp?type=" + ModalType.Role);
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: RoleUpsert(RoleViewModel viewModel): {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
                 return RedirectPermanent("/Role/RoleModalPopUp?type=" + ModalType.Error);
             };
@@ -140,7 +152,7 @@ namespace TempleVolunteerClient
 
         #region Getters
         [HttpGet]
-        //[AutoValidateAntiforgeryToken]
+        [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> RoleGet(bool isActive = true)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
@@ -160,13 +172,13 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Role/RoleModalPopUp?type=" + ModalType.Error);
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?userId={1}", this.Uri, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role/GetAllAsync?propertyId={1}&userId={2}", this.Uri, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
                         TempData["ModalMessage"] = string.Format("Error occuured in RoleGet. Message: '{0}'. Please contact support.", response.RequestMessage);
 
-                        return RedirectPermanent("/Role/StaffModalPopUp");
+                        return RedirectPermanent("/Role/RoleModalPopUp");
                     }
 
                     string stringData = response.Content.ReadAsStringAsync().Result;
@@ -191,7 +203,7 @@ namespace TempleVolunteerClient
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
-            StaffViewModel viewModel = new StaffViewModel();
+            RoleViewModel viewModel = new RoleViewModel();
 
             try
             {
@@ -206,7 +218,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Role/RoleModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Role?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -234,7 +246,7 @@ namespace TempleVolunteerClient
         #endregion
 
         [HttpDelete]
-        public async Task<IActionResult> RoleDelete(int roleTaskId, int propertyId)
+        public async Task<IActionResult> Delete(int roleId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -253,7 +265,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Role/RoleModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Role/DeleteAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, roleTaskId, propertyId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.DeleteAsync(string.Format("{0}/Role/DeleteAsync?roleId={1}&propertyId={2}&userId='{3}'", this.Uri, roleId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

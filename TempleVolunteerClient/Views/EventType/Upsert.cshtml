@@ -80,46 +80,48 @@
     }
 </div>
 
-@section Scripts{    
-@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-<script>
-    $(document).ready(function () {
-        $('.listbox').multiselect({
-            includeSelectAllOption: true
-        });
-        
-        $("#nameId").focus();
-
-        $("#eventTypeForm").on("submit", function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: '/EventType/EventTypeGet/',
-                type: 'GET',
-                dataType: "json",
-                success: validateData,
-                error: function (result) {
-                    alert('error');
-                }
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $('.listbox').multiselect({
+                includeSelectAllOption: true
             });
 
-            function validateData(data) {
-                let exists = false;
-                $.each(data.data, function (i, item) {
-                    exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.eventTypeId) != parseInt($("#hiddenId").val())));
-                        
-                    if (exists) {
-                        return false;
+            $("#nameId").focus();
+
+            $("#eventTypeForm").on("submit", function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/EventType/EventTypeGet/',
+                    type: 'GET',
+                    dataType: "json",
+                    success: validateData,
+                    error: function (result) {
+                        alert('error');
                     }
                 });
 
-                if (exists) {
-                    swal("This eventType already exists!", "");
-                }
-                else {
-                    $("#eventTypeForm").unbind("submit").submit();
-                }
-            };
+                function validateData(data) {
+                    let exists = false;
+                    $.each(data.data, function (i, item) {
+                        exists = ($("#nameId").val().toLowerCase().trim() == item.name.toLowerCase().trim() && (parseInt(item.eventTypeId) != parseInt($("#hiddenId").val())));
+
+                        if (exists) {
+                            return false;
+                        }
+                    });
+
+                    if (exists) {
+                        swal("This Event Type already exists!", "");
+                    }
+                    else {
+                        $("#eventTypeForm").unbind("submit").submit();
+                    }
+                };
+            });
         });
-    });
-</script>
+    </script>
 }

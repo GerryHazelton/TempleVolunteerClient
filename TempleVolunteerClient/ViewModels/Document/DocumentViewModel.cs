@@ -12,10 +12,10 @@ namespace TempleVolunteerClient
         public string Name { get; set; }
 
         [Display(Name = "Description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Display(Name = "Note")]
-        public string Note { get; set; }
+        public string? Note { get; set; }
 
         [Display(Name = "File Name")]
         public string DocumentFileName { get; set; }

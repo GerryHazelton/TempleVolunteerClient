@@ -29,12 +29,13 @@ function loadDataTable() {
             "datatype": "json",
             "serverSide": false,
             "error": function () {
-                window.location.href = "/Account/AreaModalPopUp"; 
+                window.location.href = "/Account/ErrorModalPopUp"; 
             }
         },
         "columns": [
             { "data": "name", "width": "10%" },
             { "data": "description", "width": "10%" },
+            { "data": "note", "width": "10%" },
             {
                 "data": "areaId",
                 "render": function (data) {

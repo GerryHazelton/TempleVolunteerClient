@@ -10,7 +10,7 @@
         <h2 class="text-info">Manage Events</h2>
     </div>
     <div class="col-3 offset-3">
-        <a asp-action="EventUpsert" asp-controller="Event" class="btn btn-info form-control text-white">
+        <a asp-action="Upsert" asp-controller="Event" class="btn btn-info form-control text-white">
             Add
         </a>
     </div>
@@ -20,6 +20,9 @@
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
+                    <th>Note</th>
+                    <th id="startDateId">Start Date/Time</th>
+                    <th id="endDateId">End Date/Time</th>
                     <th></th>
                 </tr>
             </thead>
@@ -38,6 +41,14 @@
                 <label style="color:blue" class="font-weight-bold">Event ID:</label>&nbsp;<span id="eventId"></span>
                 <br />
                 <label style="color:blue" class="font-weight-bold">Name:</label>&nbsp;<span id="eventName"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Description:</label>&nbsp;<span id="eventDescription"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Note:</label>&nbsp;<span id="eventNote"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">Start Date/Time:</label>&nbsp;<span id="eventStartDate"></span>
+                <br />
+                <label style="color:blue" class="font-weight-bold">End Date/Time:</label>&nbsp;<span id="eventEndDate"></span>
                 <br />
                 <label style="color:blue" class="font-weight-bold">Is Active:</label>&nbsp;<span id="eventIsActive"></span>
                 <br />
@@ -62,9 +73,6 @@
     <script id="eventListId" src="~/js/Event/eventList.js"></script>
     <script>
         $(document).ready(function () {
-            //document.querySelector("#eventAdd").onclick = function (e) {
-            //    e.preventDefault();
-            //}
         });
     </script>
 }

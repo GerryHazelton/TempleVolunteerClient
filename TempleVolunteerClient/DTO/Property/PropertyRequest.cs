@@ -13,7 +13,7 @@
         public string PhoneNumber { get; set; }
         public string FaxNumber { get; set; }
         public string Website { get; set; }
-        public string Note { get; set; }
+        public string? Note { get; set; }
         public int[] StaffIds { get; set; }
     }
 }

@@ -5,7 +5,7 @@
 <br />
 
 <div class="border container" style="padding:30px;">
-    @using (@Html.BeginForm("StaffUpsert", "Staff", FormMethod.Post, new { id = "staffForm", enctype = "multipart/form-data" }))
+    @using (@Html.BeginForm("Upsert", "Staff", FormMethod.Post, new { id = "staffForm", enctype = "multipart/form-data" }))
     {
         @if (Model.StaffId != 0)
         {
@@ -14,7 +14,8 @@
             <input type="hidden" asp-for="@Model.CreatedDate" />
             <input type="hidden" asp-for="@Model.UpdatedBy" />
             <input type="hidden" asp-for="@Model.UpdatedDate" />
-            <input type="hidden" asp-for="@Model.PrevStaffImage" />
+            <input type="hidden" asp-for="@Model.PrevStaffFileName" />
+            <input type="hidden" asp-for="@Model.StaffByte" />
             <input type="hidden" asp-for="@Model.IsVerified" />
             <input type="hidden" asp-for="@Model.IsLockedOut" />
             <input type="hidden" asp-for="@Model.LoginAttempts" />
@@ -22,7 +23,7 @@
             <input type="hidden" asp-for="@Model.PasswordHash" />
         }
         <div class="text-danger" asp-validation-summary="ModelOnly"></div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label id="firstName" style="color:blue" class="font-weight-bold" asp-for="FirstName"></label>
             </div>
@@ -31,7 +32,7 @@
                 <span asp-validation-for="FirstName" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="MiddleName" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -40,7 +41,7 @@
                 <span asp-validation-for="MiddleName" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="LastName" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -49,7 +50,7 @@
                 <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Address" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -58,7 +59,7 @@
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Address2" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -67,7 +68,7 @@
                 <span asp-validation-for="Address2" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="City" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -76,7 +77,7 @@
                 <span asp-validation-for="City" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="State" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -85,7 +86,7 @@
                 <span asp-validation-for="State" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="PostalCode" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -94,7 +95,7 @@
                 <span asp-validation-for="PostalCode" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Country" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -103,7 +104,7 @@
                 <span asp-validation-for="Country" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="EmailAddress" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -112,7 +113,7 @@
                 <span asp-validation-for="EmailAddress" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="PhoneNumber" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -121,16 +122,15 @@
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="RoleId" style="color:blue" class="font-weight-bold"></label>
+                <label asp-for="Roles" style="color:blue" class="font-weight-bold"></label>
             </div>
-            <div class="col-6">
-                <select asp-for="RoleId" asp-items="Model.RoleList" class="form-control"></select>
-                <span asp-validation-for="RoleId" class="text-danger"></span>
+            <div class="col-1">
+                @Html.DropDownListFor(m => m.RoleId, Model.Roles, new { style= "width:250px" })
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Gender" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -139,7 +139,7 @@
                 <span asp-validation-for="Gender" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="FirstAid" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -148,7 +148,7 @@
                 <span asp-validation-for="FirstAid" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="CPR" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -157,7 +157,7 @@
                 <span asp-validation-for="CPR" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="LessonStudent" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -166,7 +166,7 @@
                 <span asp-validation-for="LessonStudent" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Kriyaban" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -175,7 +175,7 @@
                 <span asp-validation-for="Kriyaban" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="Notes" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -184,7 +184,7 @@
                 <span asp-validation-for="Notes" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="CanOrderSupplies" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -193,7 +193,7 @@
                 <span asp-validation-for="CanOrderSupplies" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="CanViewReports" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -202,7 +202,7 @@
                 <span asp-validation-for="CanViewReports" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="CanSendMessages" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -211,16 +211,15 @@
                 <span asp-validation-for="CanSendMessages" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="IsVerified" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
                 <input asp-for="IsVerified" class="form-check" />
-                @*<span asp-validation-for="IsVerified" class="text-danger"></span>*@
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 @if (Model.IsLockedOut)
                 {
@@ -242,7 +241,7 @@
                 }
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="StaffFileName" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -250,21 +249,20 @@
                 <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="IsActive" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-1">
                 <input asp-for="IsActive" class="form-check" />
-                @*<span asp-validation-for="IsActive" class="text-danger"></span>*@
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <input id="imageFileId" asp-for="StaffImage" accept="image/x-png,image/gif,image/jpeg" />
             </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 offset-3">
                 <button type="submit" class="btn btn-primary form-control">
                     @(Model.StaffId != 0 ? "Update" : "Create")
@@ -335,7 +333,7 @@
                     });
 
                     if (exists) {
-                        swal("This staff already exists!", "");
+                        swal("This Staff already exists!", "");
                     }
                     else {
                         $("#staffForm").unbind("submit").submit();

@@ -1,16 +1,18 @@
 ﻿var dataTable;
 
-$(eventTask).ready(function () {
+$(document).ready(function () {
     loadDataTable();
-    debugger;
+
     $('#eventTaskTable tbody').on('click', 'span', function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
         $("#eventTaskModal").modal('show');
         $('#eventTaskModal').on('shown.bs.modal', function () {
+            $('#eventTaskId').html(data_row.eventTaskId);
             $('#eventTaskName').html(data_row.name);
             $('#eventTaskDescription').html(data_row.description);
             $('#eventTaskNote').html(data_row.note);
             $('#eventTaskIsActive').html(data_row.isActive ? "Yes" : "No");
+            $('#eventTaskIsHidden').html(data_row.isActive ? "Yes" : "No");
             $('#eventTaskCreatedDate').html(data_row.createdDate);
             $('#eventTaskCreatedBy').html(data_row.createdBy);
             $('#eventTaskUpdatedDate').html(data_row.updatedDate);
@@ -27,12 +29,13 @@ function loadDataTable() {
             "datatype": "json",
             "serverSide": false,
             "error": function () {
-                window.location.href = "/Account/EventTaskModalPopUp"; 
+                window.location.href = "/Account/ErrorModalPopUp";
             }
         },
         "columns": [
             { "data": "name", "width": "10%" },
             { "data": "description", "width": "10%" },
+            { "data": "note", "width": "10%" },
             {
                 "data": "eventTaskId",
                 "render": function (data) {
@@ -40,10 +43,10 @@ function loadDataTable() {
                                 <span style="cursor:pointer">
                                     <img id="viewId" class='img-75' src="/img/view.png" alt="View EventTask Details" />
                                 </span>
-                                <a href="/EventTask/EventTaskUpsert?eventTaskId=${data}">
+                                <a style="text-decoration:none;" href="/EventTask/Upsert?eventTaskId=${data}">
                                     <img class='img-75' src="/img/edit.png" alt="Edit EventTask" />
                                 </a>
-                                <a href=# onclick=Delete('/EventTask/EventTaskDelete?eventTaskId='+${data})>
+                                <a style="text-decoration:none;" href=# onclick=Delete('/EventTask/Delete?eventTaskId='+${data})>
                                     <img class='img-75' src="/img/delete.png" alt="Delete EventTask" />
                                 </a>
                             </div>`;
