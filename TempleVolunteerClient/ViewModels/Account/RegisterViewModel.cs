@@ -107,5 +107,12 @@ namespace TempleVolunteerClient
         public int TemplePropertyId { get; set; }
 
         public IList<SelectListItem>? TemplePropertyList { get; set; }
+
+        public bool? CanSendMessages { get; set; }
+        public bool? CanViewDocuments { get; set; }
+        public bool? EmailConfirmed { get; set; }
+        public bool? IsVerified { get; set; }
+        public bool? IsActive { get; set; }
+        public DateTime? VerifiedDate { get; set; }
     }
 }

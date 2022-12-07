@@ -15,6 +15,7 @@ using static TempleVolunteerClient.Common.Permissions;
 using static TempleVolunteerClient.Common.ListHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Org.BouncyCastle.Bcpg;
+using Org.BouncyCastle.Crypto.Macs;
 
 namespace TempleVolunteerClient
 {
@@ -37,24 +38,45 @@ namespace TempleVolunteerClient
         public async Task<IActionResult?> Register(string? returnUrl = null)
         {
             RegisterViewModel viewModel = new RegisterViewModel();
+
+            if (1==1)
+            {
+                viewModel.FirstName = "Gerry";
+                viewModel.LastName = "Hazelton";
+                viewModel.Address = "2141 Levante Street";
+                viewModel.Address2 = "";
+                viewModel.City = "Carlsbad";
+                viewModel.State = "CA";
+                viewModel.PostalCode = "92009";
+                viewModel.Country = "US";
+                viewModel.PhoneNumber = "760-670-8026";
+                viewModel.EmailAddress = "gerryhazelton@gmail.com";
+                viewModel.Password = "111111";
+                viewModel.Gender = "Man";
+            }
+            else
+            {
+                viewModel.FirstName = "Seannie";
+                viewModel.LastName = "Gibson";
+                viewModel.Address = "924 Elyria Drive";
+                viewModel.Address2 = "";
+                viewModel.City = "Los Angeles";
+                viewModel.State = "CA";
+                viewModel.PostalCode = "90065";
+                viewModel.Country = "US";
+                viewModel.PhoneNumber = "323-394-5332";
+                viewModel.EmailAddress = "seanniegibson@gmail.com";
+                viewModel.Password = "Master1952!";
+                viewModel.Gender = "Femail";
+            }
+
             viewModel.GenderList = Common.ListHelpers.GenderList;
-            viewModel.FirstName = "Gerry";
-            viewModel.LastName = "Hazelton";
-            viewModel.Address = "123 Main Street";
-            viewModel.Address2 = "Apt. #22";
-            viewModel.City = "Los Angeles";
-            viewModel.State = "CA";
-            viewModel.PostalCode = "92001";
-            viewModel.Country = "US";
-            viewModel.PhoneNumber = "555-555-5555";
-            viewModel.EmailAddress = "gerryhazelton@gmail.com";
-            viewModel.Password = "111111";
-            viewModel.Gender = "Man";
             viewModel.Kriyaban = true;
             viewModel.LessonStudent = true;
             viewModel.CPR = true;
             viewModel.FirstAid = true;
             viewModel.AcceptTerms = true;
+            viewModel.CanSendMessages = true;
             ViewData["ReturnUrl"] = returnUrl;
             viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
 
@@ -89,7 +111,24 @@ namespace TempleVolunteerClient
                         Kriyaban = viewModel.Kriyaban,
                         LessonStudent = viewModel.LessonStudent,
                         AcceptTerms = true,
-                        PropertyId = viewModel.TemplePropertyId
+                        PropertyId = viewModel.TemplePropertyId,
+
+                        // testing only
+                        CanSendMessages = viewModel.CanSendMessages,
+                        CanViewDocuments = viewModel.CanViewDocuments,
+                        EmailConfirmed = viewModel.EmailConfirmed,
+                        IsVerified = viewModel.IsVerified,
+                        IsActive = viewModel.IsActive,
+                        VerifiedDate = viewModel.VerifiedDate
+
+                        // testing only
+
+
+
+
+
+
+
                     };
 
                     using (HttpClient client = new HttpClient())
@@ -141,7 +180,7 @@ namespace TempleVolunteerClient
 
         #region My Profile
         [HttpGet]
-        public IActionResult MyProfile()
+        public async Task<IActionResult> MyProfile()
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -149,22 +188,14 @@ namespace TempleVolunteerClient
 
             try
             {
-
                 using (HttpClient client = new HttpClient())
                 {
-                    MiscRequest request = new MiscRequest();
-                    request.PropertyId = this.GetIntSession("PropertyId");
-                    request.GetById = this.GetIntSession("StaffId");
-                    request.UserId = this.GetStringSession("EmailAddress");
-
                     var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                     client.DefaultRequestHeaders.Accept.Add(contentType);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
-                    string stringData = JsonConvert.SerializeObject(request);
-                    var contentData = new StringContent(stringData, Encoding.UTF8, contentType.ToString());
-                    HttpResponseMessage response = client.PostAsync(string.Format("{0}/Staff/GetByIdAsync", this.Uri), contentData).Result;
-                    var responseDeserialized = JsonConvert.DeserializeObject<MyProfileResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, GetIntSession("StaffId"), GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
+                    var responseDeserialized = JsonConvert.DeserializeObject<AreaResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

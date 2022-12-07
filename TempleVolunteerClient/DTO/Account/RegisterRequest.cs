@@ -22,5 +22,13 @@ namespace TempleVolunteerClient
         public bool Kriyaban { get; set; }
         public bool LessonStudent { get; set; }
         public bool AcceptTerms { get; set; }
+
+        // testing only
+        public bool? CanSendMessages { get; set; }
+        public bool? CanViewDocuments { get; set; }
+        public bool? EmailConfirmed { get; set; }
+        public bool? IsVerified { get; set; }
+        public bool? IsActive { get; set; }
+        public DateTime? VerifiedDate { get; set; }
     }
 }

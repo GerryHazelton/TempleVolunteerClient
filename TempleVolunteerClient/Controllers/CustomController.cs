@@ -458,8 +458,8 @@ namespace TempleVolunteerClient
         #region Getters
         protected string Uri 
         { 
-            get { return _AppSettings.UriLocal; }
-            //get { return _AppSettings.UriHiranyaloka; }
+            //get { return _AppSettings.UriLocal; }
+            get { return _AppSettings.UriHiranyaloka; }
             //get { return _AppSettings.UriProduction; }
         }
         
@@ -1151,7 +1151,7 @@ namespace TempleVolunteerClient
                     return selectItems;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 throw;
             }
