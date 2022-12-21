@@ -33,7 +33,6 @@ namespace TempleVolunteerClient.Common
 
         static public List<SelectListItem> States { get; } = new List<SelectListItem>
         {
-            new SelectListItem { Value = "", Text = ""},
             new SelectListItem { Value = "AL", Text = "Alabama"},
             new SelectListItem { Value = "AK", Text = "Alaska"},
             new SelectListItem { Value = "AZ", Text = "Arizona"},

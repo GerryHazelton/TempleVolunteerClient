@@ -9,11 +9,27 @@ $(document).ready(function () {
         $('#staffModal').on('shown.bs.modal', function () {
             $('#staffImage').attr("src", "data:image/jpg;base64," + data_row.staffImage);
             $('#staffId').html(data_row.staffId);
-            $('#staffName').html(data_row.name);
-            $('#staffDescription').html(data_row.description);
-            $('#staffNote').html(data_row.note);
-            $('#staffQuantity').html(data_row.quantity);
-            $('#staffBinNumber').html(data_row.binNumber);
+            $('#staffFirstName').html(data_row.firstName);
+            $('#staffMiddleName').html(data_row.middleName);
+            $('#staffLastName').html(data_row.lastName);
+            $('#staffAddress').html(data_row.address);
+            $('#staffAddress2').html(data_row.address2);
+            $('#staffCity').html(data_row.city);
+            $('#staffState').html(data_row.state);
+            $('#staffPostalCode').html(data_row.postalCode);
+            $('#staffCountry').html(data_row.country);
+            $('#staffEmailAddress').html(data_row.emailAddress);
+            $('#staffPhoneNumber').html(data_row.phoneNumber);
+            $('#staffGender').html(data_row.gender);
+            $('#staffFirstName').html(data_row.firstName);
+            $('#staffRole').html(data_row.role);
+            $('#staffLessonStudent').html(data_row.lessonStudent);
+            $('#staffKriyaban').html(data_row.kriyaban);
+            $('#staffFirstAid').html(data_row.firstAid);
+            $('#staffCPR').html(data_row.cpr);
+            $('#staffNotes').html(data_row.notes);
+            $('#staffCanViewReports').html(data_row.canViewReports ? "Yes" : "No");
+            $('#staffCanSendMessages').html(data_row.canSendMessages ? "Yes" : "No");
             $('#staffIsActive').html(data_row.isActive ? "Yes" : "No");
             $('#staffIsHidden').html(data_row.isHidden ? "Yes" : "No");
             $('#staffCreatedDate').html(data_row.createdDate);
@@ -78,6 +94,41 @@ function loadDataTable() {
         },
         "width": "100%"
     });
+}
+
+function GetRole(roleId) {
+    $.ajax({
+        type: "GET",
+        url: "/Role/RoleGet?roleId=" + roleId,
+        datatype: "json",
+        serverSide: true,
+        success: function (data) {
+            $('#staffRole').html(data.data["name"]);
+        },
+        error: function () {
+            alert('error');
+        }
+    });
+}
+
+function GetRoleForGrid(roleId) {
+    var role = "";
+
+    $.ajax({
+        async: false,
+        type: "GET",
+        url: "/Role/RoleGet?roleId=" + roleId,
+        datatype: "json",
+        serverSide: true,
+        success: function (data) {
+            role = data.data["name"];
+        },
+        error: function () {
+            alert('error');
+        }
+    });
+
+    return role;
 }
 
 function Delete(url) {

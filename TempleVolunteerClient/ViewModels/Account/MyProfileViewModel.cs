@@ -4,12 +4,16 @@ using TempleVolunteerClient.Common;
 
 namespace TempleVolunteerClient
 {
-    public class MyProfileViewModel
+    public class MyProfileViewModel : Audit
     {
         [Required]
         [MaxLength(25, ErrorMessage = "First Name cannot exceed 25 characters.")]
         [Display(Name = "First Name")]
         public string? FirstName { get; set; }
+
+        [MaxLength(25, ErrorMessage = "Middle Name cannot exceed 25 characters.")]
+        [Display(Name = "Middle Name")]
+        public string? MiddleName { get; set; }
 
         [Required]
         [MaxLength(25, ErrorMessage = "Last Name cannot exceed 25 characters.")]
@@ -80,12 +84,24 @@ namespace TempleVolunteerClient
 
         public int? PropertyId { get; set; }
 
-        public IFormFile? StaffImageFile { get; set; }
-
         [Display(Name = "File Name")]
         public string? StaffFileName { get; set; }
 
-        public string? StaffImage { get; set; }
-        public string? StaffPrevImage { get; set; }
+        public string? PrevStaffFileName { get; set; }
+
+        [Display(Name = "Staff Image")]
+        public IFormFile? staffImage { get; set; }
+
+        public byte[]? StaffByte { get; set; }
+
+        public string? StaffByteString { get; set; }
+
+        public int? StaffId { get; set; }
+
+        [Display(Name = "Role")]
+        public string? RoleName { get; set; }
+
+        [Display(Name = "Remove Photo")]
+        public bool RemovePhoto { get; set; }
     }
 }

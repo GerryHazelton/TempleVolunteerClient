@@ -4,6 +4,7 @@ namespace TempleVolunteerClient
     public class MyProfileRequest : Audit
     {
         public string FirstName { get; set; }
+        public string MiddleName { get; set; }
         public string LastName { get; set; }
         public string Address { get; set; }
         public string? Address2 { get; set; }
@@ -19,7 +20,8 @@ namespace TempleVolunteerClient
         public bool LessonStudent { get; set; }
         public string EmailAddress { get; set; }
         public int PropertyId { get; set; }
-        public string? StaffImageFileName { get; set; }
-        public string? StaffImage { get; set; }
+        public string? StaffFileName { get; set; }
+        public byte[]? StaffImage { get; set; }
+        public bool RemovePhoto { get; set; }
     }
 }

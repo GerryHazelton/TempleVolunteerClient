@@ -149,7 +149,7 @@ namespace TempleVolunteerClient
                         string wwwRootPath = _environment.WebRootPath;
                         string fileName = Path.GetFileNameWithoutExtension(viewModel.SupplyItemImage.FileName);
                         string extension = Path.GetExtension(viewModel.SupplyItemImage.FileName);
-                        fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
+                        fileName = fileName + DateTime.UtcNow.ToString("yymmssfff") + extension;
                         string path = Path.Combine(wwwRootPath + "\\img\\", fileName);
                         FileStream fs = null;
                         MemoryStream ms = null;
@@ -180,7 +180,7 @@ namespace TempleVolunteerClient
                         using (HttpClient client = new HttpClient())
                         {
                             supplyItem.CreatedBy = GetStringSession("EmailAddress");
-                            supplyItem.CreatedDate = DateTime.Now;
+                            supplyItem.CreatedDate = DateTime.UtcNow;
                             var data = JsonConvert.SerializeObject(supplyItem);
                             var content = new StringContent(data, Encoding.UTF8, this.ContentType);
 
@@ -212,7 +212,7 @@ namespace TempleVolunteerClient
                         using (HttpClient client = new HttpClient())
                         {
                             supplyItem.UpdatedBy = GetStringSession("EmailAddress");
-                            supplyItem.UpdatedDate = DateTime.Now;
+                            supplyItem.UpdatedDate = DateTime.UtcNow;
                             var data = JsonConvert.SerializeObject(supplyItem);
                             var content = new StringContent(data, Encoding.UTF8, this.ContentType);
 

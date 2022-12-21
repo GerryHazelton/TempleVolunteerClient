@@ -1,10 +1,16 @@
 ﻿@model TempleVolunteerClient.MyProfileViewModel
 
 <div class="my-profile-form">
-    <form name="myProfileForm" method="post" asp-controller="Account" asp-action="MyProfile" enctype="multipart/form-data">
+    <form id="myProfileId" name="myProfileForm" method="post" asp-controller="Account" asp-action="MyProfile" enctype="multipart/form-data">
 
-        <input type="hidden" asp-for="@Model.StaffPrevImage" />
-        <input type="hidden" asp-for="@Model.StaffFileName" />
+        <input type="hidden" asp-for="@Model.PropertyId" />
+        <input id="hiddenId" type="hidden" asp-for="@Model.StaffId" />
+        <input type="hidden" asp-for="@Model.PrevStaffFileName" />
+        <input type="hidden" asp-for="@Model.StaffByte" />
+        <input type="hidden" asp-for="@Model.UpdatedBy" />
+        <input type="hidden" asp-for="@Model.UpdatedDate" />
+        <input type="hidden" asp-for="@Model.CreatedBy" />
+        <input type="hidden" asp-for="@Model.CreatedDate" />
 
         <div class="text-danger" asp-validation-summary="ModelOnly"></div>
         <div class="form-group row" style="margin-bottom:10px">
@@ -18,11 +24,28 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px">
             <div class="col-4">
+                <label asp-for="MiddleName"></label>
+            </div>
+            <div class="col-8">
+                <input id="middleName" asp-for="MiddleName" class="form-control" />
+                <span asp-validation-for="MiddleName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
                 <label asp-for="LastName"></label>
             </div>
             <div class="col-8">
                 <input asp-for="LastName" class="form-control" />
                 <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="RoleName"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="RoleName" class="form-control" readonly/>
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px">
@@ -52,7 +75,7 @@
                 <span asp-validation-for="City" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row" style="margin-bottom:10px">
+        <div id="stateId" class="form-group row" style="margin-bottom:10px">
             <div class="col-4">
                 <label asp-for="State"></label>
             </div>
@@ -75,8 +98,16 @@
                 <label asp-for="Country"></label>
             </div>
             <div class="col-8">
-                <select asp-for="Country" asp-items="Model.Countries" class="form-control"></select>
+                <select id="countryId" asp-for="Country" asp-items="Model.Countries" class="form-control"></select>
                 <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <label asp-for="EmailAddress"></label>
+            </div>
+            <div class="col-8">
+                <input asp-for="EmailAddress" class="form-control" readonly />
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px">
@@ -93,60 +124,44 @@
                 <label asp-for="Gender"></label>
             </div>
             <div class="col-8">
-                <select asp-for="Gender" asp-items="Model.GenderList" class="form-control"></select>
-                <span asp-validation-for="Gender" class="text-danger"></span>
+                <select asp-for="Gender" asp-items="Model.GenderList" class="form-control" readonly></select>
             </div>
         </div>
-        <div style="display: flex;">
-            <div>
-                <div class="form-group row" style="margin-bottom:10px">
-                    <div class="col-10">
-                        First Aid <input asp-for="FirstAid" class="form-check" />
-                    </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div style="display: flex">
+                <div style="margin-bottom:10px">
+                    @Html.CheckBoxFor(model=>model.FirstAid) First Aid
                 </div>
-                <div class="form-group row" style="margin-bottom:10px">
-                    <div class="col-4">
-                        <label asp-for="CPR"></label>
-                    </div>
-                    <div class="col-8">
-                        <input asp-for="CPR" class="form-check" />
-                    </div>
+                <div style="margin-left:15px; margin-bottom:10px">
+                    @Html.CheckBoxFor(model=>model.CPR) CPR
                 </div>
-                <div class="form-group row" style="margin-bottom:10px">
-                    <div class="col-4">
-                        <label asp-for="Kriyaban"></label>
-                    </div>
-                    <div class="col-8">
-                        <input asp-for="Kriyaban" class="form-check" />
-                    </div>
+                <div style="margin-left:15px; margin-bottom:10px">
+                    @Html.CheckBoxFor(model=>model.Kriyaban) Kriyaban
                 </div>
-                <div class="form-group row" style="margin-bottom:10px">
-                    <div class="col-4">
-                        <label asp-for="LessonStudent"></label>
-                    </div>
-                    <div class="col-8">
-                        <input asp-for="LessonStudent" class="form-check" />
-                    </div>
+                <div style="margin-left:15px; margin-bottom:10px">
+                    @Html.CheckBoxFor(model=>model.LessonStudent) Lesson Student
                 </div>
-            </div>
-            <div class="form-group row">
-                <div class="col-84">
-                    <img src="data:image/png;base64,@Html.DisplayFor(model => model.StaffPrevImage)" height="150" width="100">
+                <div style="margin-left:15px; margin-bottom:10px">
+                    @Html.CheckBoxFor(model=>model.RemovePhoto) Remove Photo
                 </div>
             </div>
         </div>
         <div class="form-group row">
-            <div class="col-3 text-right">
-                <label asp-for="StaffFileName" style="color:blue" class="font-weight-bold"></label>
+            <div style="display: flex">
+                <div>
+                    <img src="data:image/png;base64,@Html.DisplayFor(model => model.StaffByteString)" height="175" width="225">
+                </div>
+                <div class="col-3 text-right">
+                    <label asp-for="StaffFileName" style="color:blue" class="font-weight-bold"></label>
+                </div>
+                <div class="col-6">
+                    <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
+                </div>
+                <div class="col-4 text-right">
+                    <input id="imageId" type="file" name="staffImage" asp-for="staffImage" accept="image/x-png,image/gif,image/jpeg,image/jpg" />
+                </div>
             </div>
-            <div class="col-6">
-                <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
-            </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-3 text-right">
-                <input type="file" name="staffImageFile" asp-for="StaffImageFile" accept="image/x-png,image/gif,image/jpeg" />
-            </div>
+
         </div>
         <div class="form-group row" style="margin-bottom:10px">
             <div class="col-3 offset-4">
@@ -162,6 +177,13 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function () {
+
+            if ($("#countryId").val() !== "US") {
+                $("#stateId").hide();
+            } else {
+                $("#stateId").show();
+            };
+
             $('#phoneNumber').keyup(function (e) {
                 var ph = this.value.replace(/\D/g, '').substring(0, 10);
                 var deleteKey = (e.keyCode == 8 || e.keyCode == 46);
@@ -180,6 +202,21 @@
                     ph = '(' + ph.substring(0, 3) + ') ' + ph.substring(3, 6) + '-' + ph.substring(6, 10);
                 }
                 this.value = ph;
+            });
+
+            $('#imageId').change(function () {
+                var filename = $('input[type=file]').val().split('\\').pop();
+                var lastIndex = filename.lastIndexOf("\\");
+                $('#fileNameId').val(filename);
+            });
+
+            $("#countryId").change(function () {
+                var country = this.value;
+                if (country !== "US") {
+                    $("#stateId").hide();
+                } else {
+                    $("#stateId").show();
+                }
             });
         });
     </script>

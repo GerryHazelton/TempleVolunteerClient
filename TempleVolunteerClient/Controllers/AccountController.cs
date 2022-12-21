@@ -16,6 +16,7 @@ using static TempleVolunteerClient.Common.ListHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Crypto.Macs;
+using iTextSharp.text.pdf.codec;
 
 namespace TempleVolunteerClient
 {
@@ -41,16 +42,16 @@ namespace TempleVolunteerClient
 
             if (1==1)
             {
-                viewModel.FirstName = "Gerry";
-                viewModel.LastName = "Hazelton";
-                viewModel.Address = "2141 Levante Street";
+                viewModel.FirstName = "Jane";
+                viewModel.LastName = "Doe";
+                viewModel.Address = "123 Main Street";
                 viewModel.Address2 = "";
-                viewModel.City = "Carlsbad";
+                viewModel.City = "Burbank";
                 viewModel.State = "CA";
-                viewModel.PostalCode = "92009";
+                viewModel.PostalCode = "90058";
                 viewModel.Country = "US";
-                viewModel.PhoneNumber = "760-670-8026";
-                viewModel.EmailAddress = "gerryhazelton@gmail.com";
+                viewModel.PhoneNumber = "213-555-5555";
+                viewModel.EmailAddress = "hazelton1@yahoo.com";
                 viewModel.Password = "111111";
                 viewModel.Gender = "Man";
             }
@@ -120,15 +121,6 @@ namespace TempleVolunteerClient
                         IsVerified = viewModel.IsVerified,
                         IsActive = viewModel.IsActive,
                         VerifiedDate = viewModel.VerifiedDate
-
-                        // testing only
-
-
-
-
-
-
-
                     };
 
                     using (HttpClient client = new HttpClient())
@@ -195,7 +187,6 @@ namespace TempleVolunteerClient
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
 
                     HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, GetIntSession("StaffId"), GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
-                    var responseDeserialized = JsonConvert.DeserializeObject<AreaResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
@@ -205,11 +196,33 @@ namespace TempleVolunteerClient
                     }
 
                     var staff = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
-                    viewModel = _mapper.Map<MyProfileViewModel>(JsonConvert.DeserializeObject<StaffRequest>(staff.Data.ToString()));
+                    var staffObj = JsonConvert.DeserializeObject<StaffRequest>(staff.Data.ToString());
+
+                    viewModel.StaffId = staffObj.StaffId;
+                    viewModel.FirstName = staffObj.FirstName;
+                    viewModel.MiddleName = staffObj.MiddleName;
+                    viewModel.LastName = staffObj.LastName;
+                    viewModel.Address = staffObj.Address;
+                    viewModel.Address2 = staffObj.Address2;
+                    viewModel.City = staffObj.City;
+                    viewModel.State = staffObj.State;
+                    viewModel.Country = staffObj.Country;
+                    viewModel.PostalCode = staffObj.PostalCode;
+                    viewModel.PhoneNumber = staffObj.PhoneNumber;
+                    viewModel.Gender = staffObj.Gender;
+                    viewModel.FirstAid = (bool)staffObj.FirstAid;
+                    viewModel.CPR = (bool)staffObj.CPR;
+                    viewModel.Kriyaban = (bool)staffObj.Kriyaban;
+                    viewModel.LessonStudent = (bool)staffObj.LessonStudent;
+                    viewModel.EmailAddress = staffObj.EmailAddress;
+                    viewModel.RoleName = this.Admin == 1 ? "Admin" : "Volunteer";
+                    viewModel.StaffFileName = staffObj.StaffFileName;
+                    viewModel.StaffByte = staffObj.StaffImage;
+                    viewModel.StaffByteString = staffObj.StaffImage != null ? Convert.ToBase64String(staffObj.StaffImage) : "";
+                    viewModel.RemovePhoto = false;
                     viewModel.GenderList = Common.ListHelpers.GenderList;
                     viewModel.Countries = Common.ListHelpers.Countries;
                     viewModel.States = Common.ListHelpers.States;
-                    viewModel.StaffPrevImage = viewModel.StaffImage;
                 }
 
                 return View(viewModel);
@@ -230,38 +243,84 @@ namespace TempleVolunteerClient
 
             try
             {
+                bool fileChange = false;
+                MyProfileRequest myProfile = null;
+
                 if (ModelState.IsValid)
                 {
-                    bool updateImage = viewModel.StaffImageFile != null ? true : false;
-                    var myProfileRequest = _mapper.Map<MyProfileRequest>(viewModel);
-                    MemoryStream ms = null;
+                    myProfile = new MyProfileRequest();
 
-                    if (updateImage)
+                    if (viewModel.staffImage != null)
                     {
-                        using var dataStream = new MemoryStream();
-                        await viewModel.StaffImageFile.CopyToAsync(dataStream);
-                        byte[] imageBytes = dataStream.ToArray();
-                        viewModel.StaffImage = Convert.ToBase64String(imageBytes);
-                        viewModel.StaffPrevImage = viewModel.StaffImage;
-                        myProfileRequest.StaffImage = viewModel.StaffImage;
-                        myProfileRequest.StaffImageFileName = viewModel.StaffImageFile.FileName;
-                    }
-                    else
-                    {
-                        if (viewModel.StaffImage != null)
+                        if (String.IsNullOrEmpty(viewModel.PrevStaffFileName) && !String.IsNullOrEmpty(viewModel.StaffFileName))
                         {
-                            viewModel.StaffPrevImage = viewModel.StaffImage;
-                            viewModel.StaffFileName = viewModel.StaffFileName;
+                            fileChange = true;
                         }
+
+                        if (!String.IsNullOrEmpty(viewModel.PrevStaffFileName) && !String.IsNullOrEmpty(viewModel.StaffFileName))
+                        {
+                            fileChange = !viewModel.PrevStaffFileName.Trim().ToLower().Equals(viewModel.StaffFileName.Trim().ToLower());
+                        }
+                    }
+
+                    myProfile.FirstName = viewModel.FirstName;
+                    myProfile.MiddleName = viewModel.MiddleName;
+                    myProfile.LastName = viewModel.LastName;
+                    myProfile.Address = viewModel.Address;
+                    myProfile.Address2 = viewModel.Address2;
+                    myProfile.City = viewModel.City;
+                    myProfile.State = viewModel.Country == "US" ? viewModel.State : null;
+                    myProfile.Country = viewModel.Country;
+                    myProfile.PostalCode = viewModel.PostalCode;
+                    myProfile.PhoneNumber = viewModel.PhoneNumber;
+                    myProfile.Gender = viewModel.Gender;
+                    myProfile.FirstAid = viewModel.FirstAid;
+                    myProfile.CPR = viewModel.CPR;
+                    myProfile.Kriyaban = viewModel.Kriyaban;
+                    myProfile.LessonStudent = viewModel.LessonStudent;
+                    myProfile.EmailAddress = viewModel.EmailAddress;
+                    myProfile.PropertyId = this.GetIntSession("PropertyId");
+                    myProfile.StaffFileName = viewModel.StaffFileName;
+
+                    if (fileChange)
+                    {
+                        string wwwRootPath = _environment.WebRootPath;
+                        string fileName = Path.GetFileNameWithoutExtension(viewModel.staffImage.FileName);
+                        string extension = Path.GetExtension(viewModel.staffImage.FileName);
+                        fileName = fileName + DateTime.UtcNow.ToString("yymmssfff") + extension;
+                        string path = Path.Combine(wwwRootPath + "\\img\\", fileName);
+                        FileStream fs = null;
+                        MemoryStream ms = null;
+                        byte[] buffer = new byte[16 * 1024];
+
+                        using (fs = System.IO.File.Create(path))
+                        {
+                            await viewModel.staffImage.CopyToAsync(fs);
+
+                            using (ms = new MemoryStream())
+                            {
+                                int read;
+                                fs.Position = 0;
+                                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                                {
+                                    ms.Write(buffer, 0, read);
+                                }
+                            }
+                        }
+
+                        myProfile.StaffFileName = viewModel.staffImage.FileName;
+                        myProfile.StaffImage = ms.ToArray();
+                        System.IO.File.Delete(path);
                     }
 
                     using (HttpClient client = new HttpClient())
                     {
-                        myProfileRequest.UpdatedBy = GetStringSession("EmailAddress");
-                        myProfileRequest.UpdatedDate = DateTime.Now;
-                        myProfileRequest.EmailAddress = GetStringSession("EmailAddress");
-                        myProfileRequest.PropertyId = GetIntSession("PropertyId");
-                        var data = JsonConvert.SerializeObject(myProfileRequest);
+                        myProfile.RemovePhoto = viewModel.RemovePhoto;
+                        myProfile.UpdatedBy = GetStringSession("EmailAddress");
+                        myProfile.UpdatedDate = DateTime.UtcNow;
+                        myProfile.EmailAddress = GetStringSession("EmailAddress");
+                        myProfile.PropertyId = GetIntSession("PropertyId");
+                        var data = JsonConvert.SerializeObject(myProfile);
                         var content = new StringContent(data, Encoding.UTF8, this.ContentType);
 
                         var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
@@ -292,14 +351,14 @@ namespace TempleVolunteerClient
                     return View(viewModel);
                 }
 
-                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Profile);
-            }
-            catch (Exception ex)
-            {
-                TempData["ModalMessage"] = string.Format("Error occurred: Unable to view profile: {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
+                    return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Profile);
+                }
+                catch (Exception ex)
+                {
+                    TempData["ModalMessage"] = string.Format("Error occurred: Unable to view profile: {0}. Message: '{1}'. Please contact support.", this.GetStringSession("EmailAddress"), ex.Message);
 
-                return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
-            }
+                    return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
+                }
         }
         #endregion
 
@@ -309,8 +368,6 @@ namespace TempleVolunteerClient
         public async Task<IActionResult> Login()
         {
             LoginViewModel viewModel = new LoginViewModel();
-            viewModel.EmailAddress = "gerryhazelton@gmail.com";
-            viewModel.Password = "11111111";
             viewModel.TemplePropertyId = 1;
             viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
 
