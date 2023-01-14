@@ -77,9 +77,9 @@
                 <br />
                 <label style="color:blue" class="font-weight-bold">Trainied In CPR:</label>&nbsp;<span id="staffCPR"></span>
                 <br />
-                <label style="color:blue" class="font-weight-bold">Notes:</label>&nbsp;<span id="staffNotes"></span>
+                <label style="color:blue" class="font-weight-bold">Note:</label>&nbsp;<span id="staffNote"></span>
                 <br />
-                <label style="color:blue" class="font-weight-bold">Can View Reports:</label>&nbsp;<span id="staffCanViewReports"></span>
+                <label style="color:blue" class="font-weight-bold">Can View Documents:</label>&nbsp;<span id="staffCanViewDocuments"></span>
                 <br />
                 <label style="color:blue" class="font-weight-bold">Can Send Messages:</label>&nbsp;<span id="staffCanSendMessages"></span>
                 <br />
@@ -107,7 +107,7 @@
 </div>
 
 @section Scripts{
-    <script id="staffListId" src="~/js/Staff/staffList.js"></script>
+    <script id="staffListId" src="~/js/Staff/staffList.js" data-admin="@Model.IsAdmin"></script>
     <script>
         $(document).ready(function () {
             //document.querySelector("#supplyId").onclick = function (e) {

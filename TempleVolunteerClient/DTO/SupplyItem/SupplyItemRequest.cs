@@ -13,5 +13,6 @@ namespace TempleVolunteerClient
         public string? BinNumber { get; set; }
         public string? SupplyItemFileName { get; set; }
         public byte[]? SupplyItemImage { get; set; }
+        public bool RemovePhoto { get; set; }
     }
 }

@@ -1,7 +1,9 @@
 ﻿var dataTable;
 
 $(document).ready(function () {
-    loadDataTable();
+    const isAdmin = document.getElementById("eventListId").dataset.admin === "True" ? true : false;
+
+    loadDataTable(isAdmin);
 
     $('#eventTable tbody').on('click', 'span', function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
@@ -24,7 +26,7 @@ $(document).ready(function () {
     });
 });
 
-function loadDataTable() {
+function loadDataTable(isAdmin) {
     dataTable = $('#eventTable').DataTable({
         "ajax": {
             "url": "/Event/EventGet",
@@ -44,7 +46,9 @@ function loadDataTable() {
             {
                 "data": "eventId",
                 "render": function (data) {
-                    return `<div class="text-center">
+
+                    if (isAdmin) {
+                        return `<div class="text-center">
                                 <span style="cursor:pointer">
                                     <img id="viewId" class='img-75' src="/img/view.png" alt="View Event Details" />
                                 </span>
@@ -55,6 +59,13 @@ function loadDataTable() {
                                     <img class='img-75' src="/img/delete.png" alt="Delete Event" />
                                 </a>
                             </div>`;
+                    } else {
+                        return `<div class="text-center">
+                                <span style="cursor:pointer">
+                                    <img id="viewId" class='img-75' src="/img/view.png" alt="View Event Details" />
+                                </span>
+                            </div>`;
+                    }
                 }, "width": "40%"
             }
         ],

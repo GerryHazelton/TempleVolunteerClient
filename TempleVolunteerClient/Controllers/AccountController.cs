@@ -39,47 +39,35 @@ namespace TempleVolunteerClient
         public async Task<IActionResult?> Register(string? returnUrl = null)
         {
             RegisterViewModel viewModel = new RegisterViewModel();
+            viewModel.GenderList = Common.ListHelpers.GenderList;
+            ViewData["ReturnUrl"] = returnUrl;
+            viewModel.Countries = Common.ListHelpers.Countries;
+            viewModel.States = Common.ListHelpers.States;
+            viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
+            viewModel.CanSendMessages = false;
+            viewModel.IsActive = false;
+            viewModel.IsVerified = false;
 
-            if (1==1)
+            if (1 == 1)
             {
-                viewModel.FirstName = "Jane";
-                viewModel.LastName = "Doe";
+                viewModel.FirstName = "John";
+                viewModel.LastName = "Smith";
                 viewModel.Address = "123 Main Street";
-                viewModel.Address2 = "";
+                viewModel.Address2 = "Apt. 4";
                 viewModel.City = "Burbank";
                 viewModel.State = "CA";
                 viewModel.PostalCode = "90058";
                 viewModel.Country = "US";
                 viewModel.PhoneNumber = "213-555-5555";
                 viewModel.EmailAddress = "hazelton1@yahoo.com";
-                viewModel.Password = "111111";
-                viewModel.Gender = "Man";
+                viewModel.Password = "11111111";
+                viewModel.Gender = "Male";
+                //viewModel.Kriyaban = true;
+                //viewModel.LessonStudent = true;
+                //viewModel.CPR = false;
+                //viewModel.FirstAid = false;
+                viewModel.AcceptTerms = true;
             }
-            else
-            {
-                viewModel.FirstName = "Seannie";
-                viewModel.LastName = "Gibson";
-                viewModel.Address = "924 Elyria Drive";
-                viewModel.Address2 = "";
-                viewModel.City = "Los Angeles";
-                viewModel.State = "CA";
-                viewModel.PostalCode = "90065";
-                viewModel.Country = "US";
-                viewModel.PhoneNumber = "323-394-5332";
-                viewModel.EmailAddress = "seanniegibson@gmail.com";
-                viewModel.Password = "Master1952!";
-                viewModel.Gender = "Femail";
-            }
-
-            viewModel.GenderList = Common.ListHelpers.GenderList;
-            viewModel.Kriyaban = true;
-            viewModel.LessonStudent = true;
-            viewModel.CPR = true;
-            viewModel.FirstAid = true;
-            viewModel.AcceptTerms = true;
-            viewModel.CanSendMessages = true;
-            ViewData["ReturnUrl"] = returnUrl;
-            viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
 
             return View(viewModel);
         }
@@ -107,32 +95,24 @@ namespace TempleVolunteerClient
                         Password = viewModel.Password,
                         PhoneNumber = viewModel.PhoneNumber,
                         Gender = viewModel.Gender,
-                        FirstAid = viewModel.FirstAid,
-                        CPR = viewModel.CPR,
-                        Kriyaban = viewModel.Kriyaban,
-                        LessonStudent = viewModel.LessonStudent,
+                        //FirstAid = viewModel.FirstAid,
+                        //CPR = viewModel.CPR,
+                        //Kriyaban = viewModel.Kriyaban,
+                        //LessonStudent = viewModel.LessonStudent,
                         AcceptTerms = true,
                         PropertyId = viewModel.TemplePropertyId,
-
-                        // testing only
-                        CanSendMessages = viewModel.CanSendMessages,
-                        CanViewDocuments = viewModel.CanViewDocuments,
-                        EmailConfirmed = viewModel.EmailConfirmed,
-                        IsVerified = viewModel.IsVerified,
-                        IsActive = viewModel.IsActive,
-                        VerifiedDate = viewModel.VerifiedDate
                     };
 
                     using (HttpClient client = new HttpClient())
                     {
                         var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
                         client.DefaultRequestHeaders.Accept.Add(contentType);
-                        HttpResponseMessage staffResponse = await client.GetAsync(string.Format("{0}/Staff/GetAllAsync?propertyId={1}&userId='{2}'", this.Uri, viewModel.TemplePropertyId, viewModel.EmailAddress));
+                        HttpResponseMessage staffResponse = await client.GetAsync(string.Format("{0}/Staff/GetAllStaffEmailAsync?propertyId={1}&userId='{2}'", this.Uri, viewModel.TemplePropertyId, viewModel.EmailAddress));
                         string stringData = staffResponse.Content.ReadAsStringAsync().Result;
                         ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
-                        var allStaff = JsonConvert.DeserializeObject<List<StaffViewModel>>(data.Data.ToString());
+                        var allStaff = JsonConvert.DeserializeObject<List<StaffEmailCheckRequest>>(data.Data.ToString());
 
-                        foreach (StaffViewModel? staff in allStaff)
+                        foreach (StaffEmailCheckRequest? staff in allStaff)
                         {
                             if (staff.EmailAddress == viewModel.EmailAddress)
                             {
@@ -250,7 +230,7 @@ namespace TempleVolunteerClient
                 {
                     myProfile = new MyProfileRequest();
 
-                    if (viewModel.staffImage != null)
+                    if (viewModel.StaffImage != null)
                     {
                         if (String.IsNullOrEmpty(viewModel.PrevStaffFileName) && !String.IsNullOrEmpty(viewModel.StaffFileName))
                         {
@@ -285,8 +265,8 @@ namespace TempleVolunteerClient
                     if (fileChange)
                     {
                         string wwwRootPath = _environment.WebRootPath;
-                        string fileName = Path.GetFileNameWithoutExtension(viewModel.staffImage.FileName);
-                        string extension = Path.GetExtension(viewModel.staffImage.FileName);
+                        string fileName = Path.GetFileNameWithoutExtension(viewModel.StaffImage.FileName);
+                        string extension = Path.GetExtension(viewModel.StaffImage.FileName);
                         fileName = fileName + DateTime.UtcNow.ToString("yymmssfff") + extension;
                         string path = Path.Combine(wwwRootPath + "\\img\\", fileName);
                         FileStream fs = null;
@@ -295,7 +275,7 @@ namespace TempleVolunteerClient
 
                         using (fs = System.IO.File.Create(path))
                         {
-                            await viewModel.staffImage.CopyToAsync(fs);
+                            await viewModel.StaffImage.CopyToAsync(fs);
 
                             using (ms = new MemoryStream())
                             {
@@ -308,7 +288,7 @@ namespace TempleVolunteerClient
                             }
                         }
 
-                        myProfile.StaffFileName = viewModel.staffImage.FileName;
+                        myProfile.StaffFileName = viewModel.StaffImage.FileName;
                         myProfile.StaffImage = ms.ToArray();
                         System.IO.File.Delete(path);
                     }

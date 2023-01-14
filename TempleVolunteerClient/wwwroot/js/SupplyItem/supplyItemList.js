@@ -11,6 +11,7 @@ $(document).ready(function () {
             $('#supplyItemId').html(data_row.supplyItemId);
             $('#supplyItemName').html(data_row.name);
             $('#supplyItemDescription').html(data_row.description);
+            $('#supplyItemCategory').html(GetCategory(data_row.categoryId));
             $('#supplyItemNote').html(data_row.note);
             $('#supplyItemQuantity').html(data_row.quantity);
             $('#supplyItemBinNumber').html(data_row.binNumber);
@@ -76,6 +77,21 @@ function loadDataTable() {
             "emptyTable": "no data found"
         },
         "width": "100%"
+    });
+}
+
+function GetCategory(categoryId) {
+    $.ajax({
+        type: "GET",
+        url: "/Category/CategoryGetById?categoryId=" + categoryId,
+        datatype: "json",
+        serverSide: true,
+        success: function (data) {
+            $('#supplyItemCategory').html(data.data["name"]);
+        },
+        error: function () {
+            alert('error');
+        }
     });
 }
 

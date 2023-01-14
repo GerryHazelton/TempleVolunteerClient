@@ -90,7 +90,7 @@ namespace TempleVolunteerClient
         public string? PrevStaffFileName { get; set; }
 
         [Display(Name = "Staff Image")]
-        public IFormFile? staffImage { get; set; }
+        public IFormFile? StaffImage { get; set; }
 
         public byte[]? StaffByte { get; set; }
 
@@ -103,5 +103,11 @@ namespace TempleVolunteerClient
 
         [Display(Name = "Remove Photo")]
         public bool RemovePhoto { get; set; }
+
+        [Display(Name = "Event Types")]
+        public ICollection<SelectListItem>? EventTypes { get; set; }
+
+        public int[]? CredentialIds { get; set; }
+        public int[]? RemoveCredentialIds { get; set; }
     }
 }

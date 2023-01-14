@@ -29,7 +29,10 @@ namespace TempleVolunteerClient
 
         public IActionResult Index()
         {
-            return View();
+            StaffViewModel viewModel = new StaffViewModel();
+            viewModel.IsAdmin = this.GetIntSession("IsAdmin") == 1 ? true : false;
+
+            return View(viewModel);
         }
 
         #region Upserts
@@ -84,7 +87,6 @@ namespace TempleVolunteerClient
                     viewModel.State = data.State;
                     viewModel.PostalCode = data.PostalCode;
                     viewModel.Country = data.Country;
-                    //viewModel.RoleId = (int)data.RoleId;
                     viewModel.EmailAddress = data.EmailAddress;
                     viewModel.PhoneNumber = data.PhoneNumber;
                     viewModel.Gender = data.Gender;
@@ -93,16 +95,14 @@ namespace TempleVolunteerClient
                     viewModel.Kriyaban = (bool)data.Kriyaban;
                     viewModel.LessonStudent = (bool)data.LessonStudent;
                     viewModel.AcceptTerms = (bool)data.AcceptTerms;
-                    viewModel.Notes = data.Notes;
-                    //viewModel.CanSchedule = (bool)data.CanSchedule;
-                    //viewModel.CanOrderSupplies = (bool)data.CanOrderSupplyItems;
-                    //viewModel.CanViewReports = (bool)data.CanViewReports;
-                    //viewModel.CanSendMessages = (bool)data.CanSendMessages;
-                    //viewModel.IsVerified = (bool)data.IsVerified;
+                    viewModel.RoleName = this.Admin == 1 ? "Admin" : "Volunteer";
+                    viewModel.Note = data.Note;
+                    viewModel.CanViewDocuments = (bool)data.CanViewDocuments;
+                    viewModel.CanSendMessages = (bool)data.CanSendMessages;
+                    viewModel.IsVerified = (bool)data.IsVerified;
                     viewModel.VerifiedDate = (DateTime)data.VerifiedDate;
-                    viewModel.RememberMe = data.RememberMe;
+                    viewModel.RememberMe = (bool)data.RememberMe;
                     viewModel.CredentialIds = data.CredentialIds;
-                    //viewModel.RoleIds = data.RoleIds;
                     viewModel.IsActive = data.IsActive;
                     viewModel.IsHidden = data.IsHidden;
                     viewModel.CreatedBy = data.CreatedBy;
@@ -112,11 +112,13 @@ namespace TempleVolunteerClient
                     viewModel.StaffFileName = data.StaffFileName;
                     viewModel.PrevStaffFileName = viewModel.StaffFileName;
                     viewModel.StaffByte = data.StaffImage;
+                    viewModel.IsAdmin = this.GetIntSession("IsAdmin") == 1 ? true : false;
                     viewModel.PropertyId = data.PropertyId;
                     viewModel.Roles = await this.GetRoleSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
                     viewModel.GenderList = Common.ListHelpers.GenderList;
                     viewModel.States = Common.ListHelpers.States;
                     viewModel.Countries = Common.ListHelpers.Countries;
+                    viewModel.StaffByteString = data.StaffImage != null ? Convert.ToBase64String(data.StaffImage) : "";
                 }
 
                 return View(viewModel);
@@ -165,7 +167,6 @@ namespace TempleVolunteerClient
                     staff.State = viewModel.State;
                     staff.PostalCode = viewModel.PostalCode;
                     staff.Country = viewModel.Country;
-                    //staff.RoleId = viewModel.RoleId;
                     staff.EmailAddress = viewModel.EmailAddress;
                     staff.PhoneNumber = viewModel.PhoneNumber;
                     staff.Gender = viewModel.Gender;
@@ -174,16 +175,14 @@ namespace TempleVolunteerClient
                     staff.Kriyaban = viewModel.Kriyaban;
                     staff.LessonStudent = viewModel.LessonStudent;
                     staff.AcceptTerms = viewModel.AcceptTerms;
-                    staff.Notes = viewModel.Notes;
-                    staff.CanSchedule = viewModel.CanSchedule;
-                    staff.CanOrderSupplyItems = viewModel.CanOrderSupplies;
-                    staff.CanViewReports = viewModel.CanViewReports;
+                    staff.Note = viewModel.Note;
+                    staff.CanViewDocuments = viewModel.CanViewDocuments;
                     staff.CanSendMessages = viewModel.CanSendMessages;
                     staff.IsVerified = viewModel.IsVerified;
                     staff.VerifiedDate = viewModel.VerifiedDate;
                     staff.RememberMe = viewModel.RememberMe;
                     staff.CredentialIds = viewModel.CredentialIds;
-                    //staff.RoleIds = viewModel.RoleIds;
+                    staff.RoleIds = viewModel.RoleIds;
                     staff.IsActive = viewModel.IsActive;
                     staff.IsHidden = viewModel.IsHidden;
                     staff.CreatedBy = viewModel.CreatedBy;
@@ -193,6 +192,7 @@ namespace TempleVolunteerClient
                     staff.StaffFileName = viewModel.StaffFileName;
                     staff.StaffImage = viewModel.StaffByte;
                     staff.PropertyId = viewModel.PropertyId;
+                    staff.RemovePhoto = viewModel.RemovePhoto;
 
                     if (fileChange)
                     {

@@ -1,6 +1,9 @@
 ﻿var dataTable;
 
 $(document).ready(function () {
+
+    const isAdmin = document.getElementById("staffListId").dataset.admin === "True" ? true : false;
+
     loadDataTable();
 
     $('#staffTable tbody').on('click', 'span', function () {
@@ -22,15 +25,17 @@ $(document).ready(function () {
             $('#staffPhoneNumber').html(data_row.phoneNumber);
             $('#staffGender').html(data_row.gender);
             $('#staffFirstName').html(data_row.firstName);
-            $('#staffRole').html(data_row.role);
+            $('#staffRole').html(isAdmin ? "Admin" : "Non-Admin");
             $('#staffLessonStudent').html(data_row.lessonStudent);
             $('#staffKriyaban').html(data_row.kriyaban);
             $('#staffFirstAid').html(data_row.firstAid);
             $('#staffCPR').html(data_row.cpr);
-            $('#staffNotes').html(data_row.notes);
-            $('#staffCanViewReports').html(data_row.canViewReports ? "Yes" : "No");
+            $('#staffNote').html(data_row.note);
+            $('#staffCanViewDocuments').html(data_row.canViewDocuments ? "Yes" : "No");
             $('#staffCanSendMessages').html(data_row.canSendMessages ? "Yes" : "No");
             $('#staffIsActive').html(data_row.isActive ? "Yes" : "No");
+            $('#staffIsVerified').html(data_row.isVerified ? "Yes" : "No");
+            $('#staffVerifiedDate').html(data_row.verifiedDate);
             $('#staffIsHidden').html(data_row.isHidden ? "Yes" : "No");
             $('#staffCreatedDate').html(data_row.createdDate);
             $('#staffCreatedBy').html(data_row.createdBy);

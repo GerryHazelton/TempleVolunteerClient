@@ -28,7 +28,10 @@ namespace TempleVolunteerClient
 
         public IActionResult Index()
         {
-            return View();
+            EventViewModel viewModel = new EventViewModel();
+            viewModel.IsAdmin = this.GetIntSession("IsAdmin") == 1 ? true : false;
+            
+            return View(viewModel);
         }
 
         #region Upserts

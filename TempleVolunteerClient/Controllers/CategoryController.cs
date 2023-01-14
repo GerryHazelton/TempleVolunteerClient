@@ -199,7 +199,7 @@ namespace TempleVolunteerClient
 
         [HttpGet]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> CategoryGetById(int staffId)
+        public async Task<IActionResult> CategoryGetById(int categoryId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 
@@ -218,7 +218,7 @@ namespace TempleVolunteerClient
                         return RedirectPermanent("/Category/CategoryModalPopUp");
                     }
 
-                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Category/GetByIdAsync?id={1}&propertyId={2}&userId={3}", this.Uri, categoryId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {

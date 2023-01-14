@@ -27,8 +27,8 @@ namespace TempleVolunteerClient.Common
 
         static public List<SelectListItem> GenderList { get; } = new List<SelectListItem>
         {
-            new SelectListItem { Value = "Man", Text = "Man"},
-            new SelectListItem { Value = "Woman", Text = "Woman"},
+            new SelectListItem { Value = "Male", Text = "Male"},
+            new SelectListItem { Value = "Female", Text = "Female"},
         };
 
         static public List<SelectListItem> States { get; } = new List<SelectListItem>

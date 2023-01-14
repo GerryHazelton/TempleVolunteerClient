@@ -66,21 +66,15 @@ namespace TempleVolunteerClient
         [Display(Name = "Email Address")]
         public string? EmailAddress { get; set; }
 
-        [MaxLength(500, ErrorMessage = "Notes cannot exceed 500 characters.")]
-        [Display(Name = "Notes")]
-        public string? Notes { get; set; }
+        [MaxLength(500, ErrorMessage = "Note cannot exceed 500 characters.")]
+        [Display(Name = "Note")]
+        public string? Note { get; set; }
 
-        [Display(Name = "Can Order Supplies")]
-        public bool CanOrderSupplies { get; set; }
-
-        [Display(Name = "Can View Reports")]
-        public bool CanViewReports { get; set; }
+        [Display(Name = "Can View Documents")]
+        public bool CanViewDocuments { get; set; }
 
         [Display(Name = "Can Send Messages")]
         public bool CanSendMessages { get; set; }
-
-        [Display(Name = "Can Schedule")]
-        public bool CanSchedule { get; set; }
 
         [Required]
         [MaxLength(15, ErrorMessage = "Phone number cannot exceed 15 characters.")]
@@ -123,7 +117,6 @@ namespace TempleVolunteerClient
         public string? LoginAttempts { get; set; }
 
         public string? PasswordHash { get; set; }
-        public bool IsAdmin { get; set; }
 
         [Display(Name = "File Name")]
         public string? StaffFileName { get; set; }
@@ -133,10 +126,16 @@ namespace TempleVolunteerClient
         [Display(Name = "Staff File")]
         public IFormFile? StaffImage { get; set; }
 
+        public string? StaffByteString { get; set; }
+
         public byte[]? StaffByte { get; set; }
-        public bool? AcceptTerms { get; set; }
-        public bool? RememberMe { get; set; }
+        public bool AcceptTerms { get; set; }
+        public bool RememberMe { get; set; }
         public int[]? CredentialIds { get; set; }
         public int[]? RoleIds { get; set; }
+        public string? RoleName { get; set; }
+
+        [Display(Name = "Remove Photo")]
+        public bool RemovePhoto { get; set; }
     }
 }

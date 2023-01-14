@@ -9,5 +9,6 @@
         public bool IsActive { get; set;}
         public bool IsHidden { get; set; }
         public int PropertyId { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }

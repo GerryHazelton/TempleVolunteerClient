@@ -21,6 +21,7 @@
             <input type="hidden" asp-for="@Model.LoginAttempts" />
             <input type="hidden" asp-for="@Model.IsActive" />
             <input type="hidden" asp-for="@Model.PasswordHash" />
+            <input type="hidden" asp-for="@Model.PropertyId" />
         }
         <div class="text-danger" asp-validation-summary="ModelOnly"></div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
@@ -77,7 +78,7 @@
                 <span asp-validation-for="City" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group row" style="margin-bottom:10px; text-align:right">
+        <div id="stateId" class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
                 <label asp-for="State" style="color:blue" class="font-weight-bold"></label>
             </div>
@@ -100,7 +101,7 @@
                 <label asp-for="Country" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <select asp-for="Country" asp-items="Model.Countries" class="form-control"></select>
+                <select id="countryId" asp-for="Country" asp-items="Model.Countries" class="form-control"></select>
                 <span asp-validation-for="Country" class="text-danger"></span>
             </div>
         </div>
@@ -177,29 +178,20 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="Notes" style="color:blue" class="font-weight-bold"></label>
+                <label asp-for="Note" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input asp-for="Notes" class="form-control" />
-                <span asp-validation-for="Notes" class="text-danger"></span>
+                <input asp-for="Note" class="form-control" />
+                <span asp-validation-for="Note" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="CanOrderSupplies" style="color:blue" class="font-weight-bold"></label>
+                <label asp-for="CanViewDocuments" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input asp-for="CanOrderSupplies" class="form-check" />
-                <span asp-validation-for="CanOrderSupplies" class="text-danger"></span>
-            </div>
-        </div>
-        <div class="form-group row" style="margin-bottom:10px; text-align:right">
-            <div class="col-3 text-right">
-                <label asp-for="CanViewReports" style="color:blue" class="font-weight-bold"></label>
-            </div>
-            <div class="col-6">
-                <input asp-for="CanViewReports" class="form-check" />
-                <span asp-validation-for="CanViewReports" class="text-danger"></span>
+                <input asp-for="CanViewDocuments" class="form-check" />
+                <span asp-validation-for="CanViewDocuments" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
@@ -243,14 +235,6 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="StaffFileName" style="color:blue" class="font-weight-bold"></label>
-            </div>
-            <div class="col-6">
-                <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
-            </div>
-        </div>
-        <div class="form-group row" style="margin-bottom:10px; text-align:right">
-            <div class="col-3 text-right">
                 <label asp-for="IsActive" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-1">
@@ -258,8 +242,24 @@
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
-            <div class="col-3 text-right">
-                <input id="imageFileId" asp-for="StaffImage" accept="image/x-png,image/gif,image/jpeg" />
+            <div class="col-3">
+                <div>
+                    <input id="imageFileId" type="file" name="staffImage" asp-for="StaffImage" accept="image/x-png,image/gif,image/jpeg,image/jpg" />
+                </div>
+            </div>
+            <div class="col-6">
+                <div>
+                    <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
+                </div>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <img src="data:image/png;base64,@Html.DisplayFor(model => model.StaffByteString)" height="175" width="225"> <br />
+                @if ((Model.Gender == "Female" && Model.StaffFileName != "Female.png") || (Model.Gender == "Male" && Model.StaffFileName != "Male.png"))
+                {
+                    @Html.CheckBoxFor(model=>model.RemovePhoto) @:Remove Photo
+                }
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
@@ -281,6 +281,21 @@
         $(document).ready(function () {
             $(function () {
                 $("#firstNameId").focus();
+            });
+
+            if ($("#countryId").val() !== "US") {
+                $("#stateId").hide();
+            } else {
+                $("#stateId").show();
+            };
+
+            $("#countryId").change(function () {
+                var country = this.value;
+                if (country !== "US") {
+                    $("#stateId").hide();
+                } else {
+                    $("#stateId").show();
+                }
             });
 
             $('#imageFileId').change(function () {

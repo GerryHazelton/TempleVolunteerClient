@@ -128,7 +128,10 @@
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px">
-            <div style="display: flex">
+            <div class="col-4">
+                Credentials
+            </div>
+            <div class="col-8" style="display: flex">
                 <div style="margin-bottom:10px">
                     @Html.CheckBoxFor(model=>model.FirstAid) First Aid
                 </div>
@@ -141,27 +144,28 @@
                 <div style="margin-left:15px; margin-bottom:10px">
                     @Html.CheckBoxFor(model=>model.LessonStudent) Lesson Student
                 </div>
-                <div style="margin-left:15px; margin-bottom:10px">
-                    @Html.CheckBoxFor(model=>model.RemovePhoto) Remove Photo
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <div>
+                    <input id="imageId" type="file" name="staffImage" asp-for="StaffImage" accept="image/x-png,image/gif,image/jpeg,image/jpg" />
+                </div>
+            </div>
+            <div class="col-8">
+                <div>
+                    <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
                 </div>
             </div>
         </div>
-        <div class="form-group row">
-            <div style="display: flex">
-                <div>
-                    <img src="data:image/png;base64,@Html.DisplayFor(model => model.StaffByteString)" height="175" width="225">
-                </div>
-                <div class="col-3 text-right">
-                    <label asp-for="StaffFileName" style="color:blue" class="font-weight-bold"></label>
-                </div>
-                <div class="col-6">
-                    <input id="fileNameId" asp-for="StaffFileName" class="form-control" value="@Model.StaffFileName" readonly />
-                </div>
-                <div class="col-4 text-right">
-                    <input id="imageId" type="file" name="staffImage" asp-for="staffImage" accept="image/x-png,image/gif,image/jpeg,image/jpg" />
-                </div>
+        <div class="form-group row" style="margin-bottom:10px">
+            <div class="col-4">
+                <img src="data:image/png;base64,@Html.DisplayFor(model => model.StaffByteString)" height="175" width="225"> <br/>
+                @if ((Model.Gender == "Female" && Model.StaffFileName != "Female.png") || (Model.Gender == "Male" && Model.StaffFileName != "Male.png"))
+                {
+                    @Html.CheckBoxFor(model=>model.RemovePhoto) @:Remove Photo
+                }
             </div>
-
         </div>
         <div class="form-group row" style="margin-bottom:10px">
             <div class="col-3 offset-4">
@@ -183,6 +187,15 @@
             } else {
                 $("#stateId").show();
             };
+
+            $("#countryId").change(function () {
+                var country = this.value;
+                if (country !== "US") {
+                    $("#stateId").hide();
+                } else {
+                    $("#stateId").show();
+                }
+            });
 
             $('#phoneNumber').keyup(function (e) {
                 var ph = this.value.replace(/\D/g, '').substring(0, 10);
@@ -208,15 +221,6 @@
                 var filename = $('input[type=file]').val().split('\\').pop();
                 var lastIndex = filename.lastIndexOf("\\");
                 $('#fileNameId').val(filename);
-            });
-
-            $("#countryId").change(function () {
-                var country = this.value;
-                if (country !== "US") {
-                    $("#stateId").hide();
-                } else {
-                    $("#stateId").show();
-                }
             });
         });
     </script>

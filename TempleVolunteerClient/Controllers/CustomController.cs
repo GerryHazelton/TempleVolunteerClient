@@ -455,7 +455,7 @@ namespace TempleVolunteerClient
         }
         #endregion
 
-        #region Getters
+        #region App Setting URL
         protected string Uri 
         { 
             get { return _AppSettings.UriLocal; }
