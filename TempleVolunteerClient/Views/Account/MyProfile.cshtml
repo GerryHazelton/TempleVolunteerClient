@@ -127,23 +127,12 @@
                 <select asp-for="Gender" asp-items="Model.GenderList" class="form-control" readonly></select>
             </div>
         </div>
-        <div class="form-group row" style="margin-bottom:10px">
-            <div class="col-4">
-                Credentials
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-4 text-right">
+                <label asp-for="Credentials"></label>
             </div>
-            <div class="col-8" style="display: flex">
-                <div style="margin-bottom:10px">
-                    @Html.CheckBoxFor(model=>model.FirstAid) First Aid
-                </div>
-                <div style="margin-left:15px; margin-bottom:10px">
-                    @Html.CheckBoxFor(model=>model.CPR) CPR
-                </div>
-                <div style="margin-left:15px; margin-bottom:10px">
-                    @Html.CheckBoxFor(model=>model.Kriyaban) Kriyaban
-                </div>
-                <div style="margin-left:15px; margin-bottom:10px">
-                    @Html.CheckBoxFor(model=>model.LessonStudent) Lesson Student
-                </div>
+            <div class="col-8">
+                @Html.ListBoxFor(m => m.CredentialIds, Model.Credentials, new { @class="listbox", style= "width:300px" })
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px">
@@ -181,6 +170,8 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function () {
+
+            $('.listbox').multiselect();
 
             if ($("#countryId").val() !== "US") {
                 $("#stateId").hide();

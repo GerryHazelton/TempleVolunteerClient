@@ -90,10 +90,6 @@ namespace TempleVolunteerClient
                     viewModel.EmailAddress = data.EmailAddress;
                     viewModel.PhoneNumber = data.PhoneNumber;
                     viewModel.Gender = data.Gender;
-                    viewModel.FirstAid = (bool)data.FirstAid;
-                    viewModel.CPR = (bool)data.CPR;
-                    viewModel.Kriyaban = (bool)data.Kriyaban;
-                    viewModel.LessonStudent = (bool)data.LessonStudent;
                     viewModel.AcceptTerms = (bool)data.AcceptTerms;
                     viewModel.RoleName = this.Admin == 1 ? "Admin" : "Volunteer";
                     viewModel.Note = data.Note;
@@ -119,6 +115,7 @@ namespace TempleVolunteerClient
                     viewModel.States = Common.ListHelpers.States;
                     viewModel.Countries = Common.ListHelpers.Countries;
                     viewModel.StaffByteString = data.StaffImage != null ? Convert.ToBase64String(data.StaffImage) : "";
+                    viewModel.Credentials = await this.GetCredentialSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
                 }
 
                 return View(viewModel);
@@ -170,10 +167,6 @@ namespace TempleVolunteerClient
                     staff.EmailAddress = viewModel.EmailAddress;
                     staff.PhoneNumber = viewModel.PhoneNumber;
                     staff.Gender = viewModel.Gender;
-                    staff.FirstAid = viewModel.FirstAid;
-                    staff.CPR = viewModel.CPR;
-                    staff.Kriyaban = viewModel.Kriyaban;
-                    staff.LessonStudent = viewModel.LessonStudent;
                     staff.AcceptTerms = viewModel.AcceptTerms;
                     staff.Note = viewModel.Note;
                     staff.CanViewDocuments = viewModel.CanViewDocuments;
@@ -193,6 +186,7 @@ namespace TempleVolunteerClient
                     staff.StaffImage = viewModel.StaffByte;
                     staff.PropertyId = viewModel.PropertyId;
                     staff.RemovePhoto = viewModel.RemovePhoto;
+                    staff.CredentialIds = viewModel.CredentialIds;
 
                     if (fileChange)
                     {

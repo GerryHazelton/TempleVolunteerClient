@@ -107,6 +107,9 @@ namespace TempleVolunteerClient
         [Display(Name = "Event Types")]
         public ICollection<SelectListItem>? EventTypes { get; set; }
 
+        [Display(Name = "Credentials")]
+        public ICollection<SelectListItem>? Credentials { get; set; }
+
         public int[]? CredentialIds { get; set; }
         public int[]? RemoveCredentialIds { get; set; }
     }

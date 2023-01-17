@@ -16,10 +16,6 @@
         public string? EmailAddress { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Gender { get; set; }
-        public bool? FirstAid { get; set; }
-        public bool? CPR { get; set; }
-        public bool? Kriyaban { get; set; }
-        public bool? LessonStudent { get; set; }
         public bool? AcceptTerms { get; set; }
         public string? Note { get; set; }
         public bool? CanViewDocuments { get; set; }
@@ -30,10 +26,10 @@
         public bool? IsLockedOut { get; set; }
         public int? LoginAttempts { get; set; }
         public bool? UnlockUser { get; set; }
-        public int[]? CredentialIds { get; set; }
         public int[]? RoleIds { get; set; }
         public string? StaffFileName { get; set; }
         public byte[]? StaffImage { get; set; }
+        public int[]? CredentialIds { get; set; }
         public bool RemovePhoto { get; set; }
     }
 }

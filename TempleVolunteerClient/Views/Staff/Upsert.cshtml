@@ -142,38 +142,10 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="FirstAid" style="color:blue" class="font-weight-bold"></label>
-            </div>
-            <div class="col-6 text-left">
-                <input asp-for="FirstAid" class="form-check" />
-                <span asp-validation-for="FirstAid" class="text-danger"></span>
-            </div>
-        </div>
-        <div class="form-group row" style="margin-bottom:10px; text-align:right">
-            <div class="col-3 text-right">
-                <label asp-for="CPR" style="color:blue" class="font-weight-bold"></label>
-            </div>
-            <div class="col-6 text-left">
-                <input asp-for="CPR" class="form-check" />
-                <span asp-validation-for="CPR" class="text-danger"></span>
-            </div>
-        </div>
-        <div class="form-group row" style="margin-bottom:10px; text-align:right">
-            <div class="col-3 text-right">
-                <label asp-for="LessonStudent" style="color:blue" class="font-weight-bold"></label>
+                <label asp-for="Credentials" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input asp-for="LessonStudent" class="form-check" />
-                <span asp-validation-for="LessonStudent" class="text-danger"></span>
-            </div>
-        </div>
-        <div class="form-group row" style="margin-bottom:10px; text-align:right">
-            <div class="col-3 text-right">
-                <label asp-for="Kriyaban" style="color:blue" class="font-weight-bold"></label>
-            </div>
-            <div class="col-6">
-                <input asp-for="Kriyaban" class="form-check" />
-                <span asp-validation-for="Kriyaban" class="text-danger"></span>
+                @Html.ListBoxFor(m => m.CredentialIds, Model.Credentials, new { @class="listbox", style= "width:300px" })
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
@@ -279,6 +251,9 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function () {
+
+            $('.listbox').multiselect();
+
             $(function () {
                 $("#firstNameId").focus();
             });

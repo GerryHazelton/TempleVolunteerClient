@@ -85,20 +85,6 @@ namespace TempleVolunteerClient
         public IList<SelectListItem>? GenderList { get; set; }
 
         [Required]
-        [Display(Name = "First Aid")]
-        public bool FirstAid { get; set; }
-
-        [Required]
-        [Display(Name = "CPR")]
-        public bool CPR { get; set; }
-
-        [Display(Name = "Kriyaban")]
-        public bool Kriyaban { get; set; }
-
-        [Display(Name = "Lesson Student")]
-        public bool LessonStudent { get; set; }
-
-        [Required]
         [Display(Name = "Accept Terms")]
         public bool AcceptTerms { get; set; }
 

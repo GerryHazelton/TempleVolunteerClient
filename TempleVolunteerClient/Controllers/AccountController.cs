@@ -95,10 +95,6 @@ namespace TempleVolunteerClient
                         Password = viewModel.Password,
                         PhoneNumber = viewModel.PhoneNumber,
                         Gender = viewModel.Gender,
-                        //FirstAid = viewModel.FirstAid,
-                        //CPR = viewModel.CPR,
-                        //Kriyaban = viewModel.Kriyaban,
-                        //LessonStudent = viewModel.LessonStudent,
                         AcceptTerms = true,
                         PropertyId = viewModel.TemplePropertyId,
                     };
@@ -190,10 +186,6 @@ namespace TempleVolunteerClient
                     viewModel.PostalCode = staffObj.PostalCode;
                     viewModel.PhoneNumber = staffObj.PhoneNumber;
                     viewModel.Gender = staffObj.Gender;
-                    viewModel.FirstAid = (bool)staffObj.FirstAid;
-                    viewModel.CPR = (bool)staffObj.CPR;
-                    viewModel.Kriyaban = (bool)staffObj.Kriyaban;
-                    viewModel.LessonStudent = (bool)staffObj.LessonStudent;
                     viewModel.EmailAddress = staffObj.EmailAddress;
                     viewModel.RoleName = this.Admin == 1 ? "Admin" : "Volunteer";
                     viewModel.StaffFileName = staffObj.StaffFileName;
@@ -203,6 +195,8 @@ namespace TempleVolunteerClient
                     viewModel.GenderList = Common.ListHelpers.GenderList;
                     viewModel.Countries = Common.ListHelpers.Countries;
                     viewModel.States = Common.ListHelpers.States;
+                    viewModel.CredentialIds = staffObj.CredentialIds;
+                    viewModel.Credentials = await this.GetCredentialSelectList(GetIntSession("PropertyId"), GetStringSession("EmailAddress"), true, false);
                 }
 
                 return View(viewModel);
@@ -254,13 +248,10 @@ namespace TempleVolunteerClient
                     myProfile.PostalCode = viewModel.PostalCode;
                     myProfile.PhoneNumber = viewModel.PhoneNumber;
                     myProfile.Gender = viewModel.Gender;
-                    myProfile.FirstAid = viewModel.FirstAid;
-                    myProfile.CPR = viewModel.CPR;
-                    myProfile.Kriyaban = viewModel.Kriyaban;
-                    myProfile.LessonStudent = viewModel.LessonStudent;
                     myProfile.EmailAddress = viewModel.EmailAddress;
                     myProfile.PropertyId = this.GetIntSession("PropertyId");
                     myProfile.StaffFileName = viewModel.StaffFileName;
+                    myProfile.CredentialIds = viewModel.CredentialIds;
 
                     if (fileChange)
                     {

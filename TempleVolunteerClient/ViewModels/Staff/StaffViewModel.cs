@@ -89,18 +89,6 @@ namespace TempleVolunteerClient
 
         public IList<SelectListItem>? GenderList { get; set; }
 
-        [Display(Name = "Trained in First Aid")]
-        public bool FirstAid { get; set; }
-
-        [Display(Name = "Trained in CPR")]
-        public bool CPR { get; set; }
-
-        [Display(Name = "Kriyaban")]
-        public bool Kriyaban { get; set; }
-
-        [Display(Name = "Lesson Student")]
-        public bool LessonStudent { get; set; }
-
         [Display(Name = "Is Verified")]
         public bool IsVerified { get; set; }
 
@@ -137,5 +125,8 @@ namespace TempleVolunteerClient
 
         [Display(Name = "Remove Photo")]
         public bool RemovePhoto { get; set; }
+
+        [Display(Name = "Credentials")]
+        public ICollection<SelectListItem>? Credentials { get; set; }
     }
 }
