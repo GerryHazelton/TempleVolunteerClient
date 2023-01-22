@@ -4,6 +4,13 @@
     }
 }
 
+.newRegForm {
+    width: 550px;
+    border:solid 0.5px;
+    padding: 10px;
+
+}
+
 .login-form {
     margin-top:50px;
     padding-top: 10px;

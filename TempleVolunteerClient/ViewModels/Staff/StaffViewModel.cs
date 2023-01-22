@@ -90,11 +90,11 @@ namespace TempleVolunteerClient
         public IList<SelectListItem>? GenderList { get; set; }
 
         [Display(Name = "Is Verified")]
-        public bool IsVerified { get; set; }
+        public bool? EmailConfirmed { get; set; }
 
         [Display(Name = "Verified Date")]
         [DataType(DataType.Date)]
-        public DateTime VerifiedDate { get; set; }
+        public DateTime? EmailConfirmedDate { get; set; }
 
         [Display(Name = "Unlock User")]
         public bool UnlockUser { get; set; }
@@ -128,5 +128,7 @@ namespace TempleVolunteerClient
 
         [Display(Name = "Credentials")]
         public ICollection<SelectListItem>? Credentials { get; set; }
+
+        public bool Approve { get; set; }
     }
 }

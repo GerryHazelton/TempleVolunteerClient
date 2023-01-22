@@ -97,8 +97,8 @@ namespace TempleVolunteerClient
         public bool? CanSendMessages { get; set; }
         public bool? CanViewDocuments { get; set; }
         public bool? EmailConfirmed { get; set; }
-        public bool? IsVerified { get; set; }
+        public DateTime? EmailConfirmedDate { get; set; }
         public bool? IsActive { get; set; }
-        public DateTime? VerifiedDate { get; set; }
+        public bool? NewRegistration { get; set; }
     }
 }

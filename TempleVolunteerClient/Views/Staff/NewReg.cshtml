@@ -1,0 +1,142 @@
+﻿@model StaffViewModel
+<br/>
+<h2 class="text-info">New Registration</h2>
+
+<div style="padding:10px;">
+    @using (@Html.BeginForm("NewReg", "Staff", FormMethod.Post, new { @class="newRegForm", enctype="multipart/form-data" }))
+    {
+        <input id="hiddenId" type="hidden" asp-for="@Model.StaffId" />
+        <input type="hidden" asp-for="@Model.PropertyId" />
+
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label style="color:blue" class="font-weight-bold" asp-for="FirstName"></label>
+            </div>
+            <div class="col-6 text-left">
+                @Model.FirstName
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="MiddleName" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6 text-left">
+                @Model.MiddleName
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="LastName" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.LastName
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="Address" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.Address
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="Address2" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.Address2
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="City" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.City
+            </div>
+        </div>
+        <div id="stateId" class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="State" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.State
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="PostalCode" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.PostalCode
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="Country" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.Country
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="EmailAddress" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.EmailAddress
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="PhoneNumber" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.PhoneNumber
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+                <label asp-for="Gender" style="color:blue" class="font-weight-bold"></label>
+            </div>
+            <div class="col-6">
+                @Model.Gender
+            </div>
+        </div>
+
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 text-right">
+            </div>
+            <div class="col-6">
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-default active">
+                        <input type="radio" id="approve1" name="Approve" value="true" checked="checked" /> APPROVE
+                    </label>
+                    <label class="btn btn-default">
+                        <input type="radio" id="approve2" name="Approve" value="false" /> DECLINE
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row" style="margin-bottom:10px;">
+            <div class="col-3 offset-3">
+                <button type="submit" class="btn btn-primary form-control">
+                    Submit
+                </button>
+            </div>
+            <div class="col-3">
+                <a asp-action="Index" asp-controller="Staff" class="btn btn-primary form-control">Retrun</a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+        });
+    </script>
+}

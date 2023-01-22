@@ -18,6 +18,7 @@ namespace TempleVolunteerClient.Common
         public int LoginAttempts { get; set; }
         public bool IsLockedOut { get; set; }
         public bool RememberMe { get; set; }
+        public bool NewRegistration { get; set; }
         public string? PasswordHash { get; set; }
         public string? VerificationToken { get; set; }
     }

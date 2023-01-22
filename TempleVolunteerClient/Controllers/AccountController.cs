@@ -46,7 +46,7 @@ namespace TempleVolunteerClient
             viewModel.TemplePropertyList = await this.GetTempleProperties(true, false);
             viewModel.CanSendMessages = false;
             viewModel.IsActive = false;
-            viewModel.IsVerified = false;
+            viewModel.EmailConfirmed = false;
 
             if (1 == 1)
             {

@@ -16,7 +16,7 @@
             <input type="hidden" asp-for="@Model.UpdatedDate" />
             <input type="hidden" asp-for="@Model.PrevStaffFileName" />
             <input type="hidden" asp-for="@Model.StaffByte" />
-            <input type="hidden" asp-for="@Model.IsVerified" />
+            <input type="hidden" asp-for="@Model.EmailConfirmed" />
             <input type="hidden" asp-for="@Model.IsLockedOut" />
             <input type="hidden" asp-for="@Model.LoginAttempts" />
             <input type="hidden" asp-for="@Model.IsActive" />
@@ -177,10 +177,10 @@
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">
             <div class="col-3 text-right">
-                <label asp-for="IsVerified" style="color:blue" class="font-weight-bold"></label>
+                <label asp-for="EmailConfirmed" style="color:blue" class="font-weight-bold"></label>
             </div>
             <div class="col-6">
-                <input asp-for="IsVerified" class="form-check" />
+                <input asp-for="EmailConfirmed" class="form-check" />
             </div>
         </div>
         <div class="form-group row" style="margin-bottom:10px; text-align:right">

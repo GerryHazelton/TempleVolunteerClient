@@ -35,6 +35,126 @@ namespace TempleVolunteerClient
             return View(viewModel);
         }
 
+        #region New Reg
+        [HttpGet]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> NewReg(int staffId)
+        {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+
+            StaffViewModel viewModel = new StaffViewModel();
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff/GetByIdAsync?id={1}&propertyId={2}&userId='{3}'", this.Uri, staffId, GetIntSession("PropertyId"), GetStringSession("EmailAddress")));
+                    var responseDeserialized = JsonConvert.DeserializeObject<StaffResponse>((JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result.ToString())).ToString());
+
+                    if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occurred in StaffUpsert. Message: '{0}'. Please contact support.", response.RequestMessage);
+
+                        return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    var staff = JsonConvert.DeserializeObject<ServiceResponse>(response.Content.ReadAsStringAsync().Result);
+                    var data = JsonConvert.DeserializeObject<StaffRequest>(staff.Data.ToString());
+                    viewModel.StaffId = data.StaffId;
+                    viewModel.FirstName = data.FirstName;
+                    viewModel.MiddleName = data.MiddleName;
+                    viewModel.LastName = data.LastName;
+                    viewModel.Address = data.Address;
+                    viewModel.Address2 = data.Address2;
+                    viewModel.City = data.City;
+                    viewModel.State = data.State;
+                    viewModel.PostalCode = data.PostalCode;
+                    viewModel.Country = data.Country;
+                    viewModel.EmailAddress = data.EmailAddress;
+                    viewModel.PhoneNumber = data.PhoneNumber;
+                    viewModel.Gender = data.Gender;
+                    viewModel.PropertyId = GetIntSession("PropertyId");
+                }
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["ModalMessage"] = string.Format("Error occurred in StaffUpsert. Message: '{0}'. Please contact support.", ex.Message);
+
+                return RedirectPermanent("/Account/StaffModalPopUp?type=" + ModalType.Error);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> NewReg(StaffViewModel viewModel)
+        {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+
+            try
+            {
+                StaffRequest staff = new StaffRequest();
+                staff.StaffId = viewModel.StaffId;
+                staff.PropertyId = viewModel.PropertyId;
+                staff.NewRegistration = true;
+
+                if (viewModel.Approve)
+                {
+                    staff.Approve = true;
+                    staff.IsActive = true;
+                } else
+                {
+                    staff.Approve = false;
+                    staff.IsActive = false;
+                }
+
+                using (HttpClient client = new HttpClient())
+                {
+                    staff.UpdatedBy = GetStringSession("EmailAddress");
+                    staff.UpdatedDate = DateTime.UtcNow;
+                    var data = JsonConvert.SerializeObject(staff);
+                    var content = new StringContent(data, Encoding.UTF8, this.ContentType);
+
+                    var contentType = new MediaTypeWithQualityHeaderValue(this.ContentType);
+                    client.DefaultRequestHeaders.Accept.Add(contentType);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(int staffId): {0}. Bearer token is null. Please contact support.", viewModel.StaffId);
+
+                        return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    HttpResponseMessage response = await client.PutAsync(string.Format("{0}/Staff/PutAsync", this.Uri), content);
+
+                    if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occurred: New StaffUpsert(StaffViewModel viewModel). Message: '{0}'. Please contact support.", response.RequestMessage);
+
+                        return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
+                    }
+
+                    TempData["ModalMessage"] = "Staff successfully updated";
+                }
+
+                return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Staff);
+            }
+            catch (Exception ex)
+            {
+                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", viewModel.StaffId, ex.Message);
+
+                return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
+            }
+        }
+        #endregion
+
+
         #region Upserts
         [HttpGet]
         [AutoValidateAntiforgeryToken]
@@ -95,8 +215,13 @@ namespace TempleVolunteerClient
                     viewModel.Note = data.Note;
                     viewModel.CanViewDocuments = (bool)data.CanViewDocuments;
                     viewModel.CanSendMessages = (bool)data.CanSendMessages;
-                    viewModel.IsVerified = (bool)data.IsVerified;
-                    viewModel.VerifiedDate = (DateTime)data.VerifiedDate;
+                    viewModel.EmailConfirmed = (bool)data.EmailConfirmed;
+
+                    if (data.EmailConfirmedDate != null)
+                    {
+                        viewModel.EmailConfirmedDate = (DateTime)data.EmailConfirmedDate;
+                    }
+
                     viewModel.RememberMe = (bool)data.RememberMe;
                     viewModel.CredentialIds = data.CredentialIds;
                     viewModel.IsActive = data.IsActive;
@@ -171,8 +296,8 @@ namespace TempleVolunteerClient
                     staff.Note = viewModel.Note;
                     staff.CanViewDocuments = viewModel.CanViewDocuments;
                     staff.CanSendMessages = viewModel.CanSendMessages;
-                    staff.IsVerified = viewModel.IsVerified;
-                    staff.VerifiedDate = viewModel.VerifiedDate;
+                    staff.EmailConfirmed = viewModel.EmailConfirmed;
+                    staff.EmailConfirmedDate = viewModel.EmailConfirmedDate;
                     staff.RememberMe = viewModel.RememberMe;
                     staff.CredentialIds = viewModel.CredentialIds;
                     staff.RoleIds = viewModel.RoleIds;

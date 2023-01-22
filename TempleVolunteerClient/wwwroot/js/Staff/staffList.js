@@ -6,7 +6,7 @@ $(document).ready(function () {
 
     loadDataTable();
 
-    $('#staffTable tbody').on('click', 'span', function () {
+    $('#staffTable tbody').on('click', '.viewStaff', function () {
         var data_row = dataTable.row($(this).parents('tr')).data(); // here is the change
         $("#staffModal").modal('show');
         $('#staffModal').on('shown.bs.modal', function () {
@@ -24,7 +24,6 @@ $(document).ready(function () {
             $('#staffEmailAddress').html(data_row.emailAddress);
             $('#staffPhoneNumber').html(data_row.phoneNumber);
             $('#staffGender').html(data_row.gender);
-            $('#staffFirstName').html(data_row.firstName);
             $('#staffRole').html(isAdmin ? "Admin" : "Non-Admin");
             $('#staffLessonStudent').html(data_row.lessonStudent);
             $('#staffKriyaban').html(data_row.kriyaban);
@@ -34,8 +33,8 @@ $(document).ready(function () {
             $('#staffCanViewDocuments').html(data_row.canViewDocuments ? "Yes" : "No");
             $('#staffCanSendMessages').html(data_row.canSendMessages ? "Yes" : "No");
             $('#staffIsActive').html(data_row.isActive ? "Yes" : "No");
-            $('#staffIsVerified').html(data_row.isVerified ? "Yes" : "No");
-            $('#staffVerifiedDate').html(data_row.verifiedDate);
+            $('#staffEmailConfirmed').html(data_row.isVerified ? "Yes" : "No");
+            $('#staffEmailConfirmedDate').html(data_row.verifiedDate);
             $('#staffIsHidden').html(data_row.isHidden ? "Yes" : "No");
             $('#staffCreatedDate').html(data_row.createdDate);
             $('#staffCreatedBy').html(data_row.createdBy);
@@ -47,6 +46,8 @@ $(document).ready(function () {
 });
 
 function loadDataTable() {
+    let newRegistration = false;
+    let newRegistrationData;
     dataTable = $('#staffTable').DataTable({
         "ajax": {
             "url": "/Staff/StaffGet",
@@ -60,6 +61,11 @@ function loadDataTable() {
         "columns": [
             {
                 "data": function (data) {
+                    if (data.newRegistration) {
+                        newRegistration = true;
+                    } else {
+                        newRegistration = false;
+                    }
                     if (data.staffFileName != null && data.staffFileName != "undefined" && data.staffFileName.toLowerCase().trim().indexOf('jpg') > 0)
                         return "<span class='img-35'><img src=\"data:image/jpg;base64," + data.staffImage + "\" /></span>";
 
@@ -74,23 +80,42 @@ function loadDataTable() {
                 "width": "20%"
             },
             { "data": "firstName", "width": "10%" },
-            { "data": "middleName", "width": "10%" },
             { "data": "lastName", "width": "10%" },
             { "data": "isActive", "width": "10%" },
             {
                 "data": "staffId",
                 "render": function (data) {
-                    return `<div class="text-center">
-                                <span style="cursor:pointer">
-                                    <img id="viewId" class='img-75' src="/img/view.png" alt="View Staff Details" />
-                                </span>
-                                <a style="text-decoration:none;" href="/Staff/Upsert?staffId=${data}">
-                                    <img class='img-75' src="/img/edit.png" alt="Edit Staff" />
-                                </a>
-                                <a style="text-decoration:none;" href=# onclick=Delete('/Staff/Delete?staffId='+${data})>
-                                    <img class='img-75' src="/img/delete.png" alt="Delete Staff" />
-                                </a>
-                            </div>`;
+                    if (newRegistration) {
+                        return `<div class="text-center">
+                                    <a style="text-decoration:none; vertical-align: middle;" href="/Staff/NewReg?staffId=${data}">
+                                        <img class='img-75' src="/img/newReg.png" alt="New Registration" />
+                                    </a>
+                                    <span style="cursor:pointer;">
+                                        <img class='img-75' src="/img/blank.png" />
+                                    </span>
+                                    <span style="cursor:pointer;">
+                                        <img class='img-75' src="/img/blank.png" />
+                                    </span>
+                                    <span style="cursor:pointer;">
+                                        <img class='img-75' src="/img/blank.png" />
+                                    </span>
+                                </div>`;
+                    } else {
+                        return `<div class="text-center">
+                                    <span class="viewStaff" style="cursor:pointer; vertical-align: middle;">
+                                        <img id="viewId" class='img-75' src="/img/view.png" alt="View Staff Details" />
+                                    </span>
+                                    <a style="text-decoration:none; vertical-align: middle;" href="/Staff/Upsert?staffId=${data}">
+                                        <img class='img-75' src="/img/edit.png" alt="Edit Staff" />
+                                    </a>
+                                    <a style="text-decoration:none; vertical-align: middle;" href=# onclick=Delete('/Staff/Delete?staffId='+${data})>
+                                        <img class='img-75' src="/img/delete.png" alt="Delete Staff" />
+                                    </a>
+                                    <span style="cursor:pointer;">
+                                        <img class='img-75' src="/img/blank.png" />
+                                    </span>
+                                </div>`;
+                    }
                 }, "width": "40%"
             }
         ],
@@ -161,3 +186,4 @@ function Delete(url) {
         }
     });
 }
+
