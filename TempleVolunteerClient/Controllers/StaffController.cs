@@ -57,7 +57,7 @@ namespace TempleVolunteerClient
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
-                        TempData["ModalMessage"] = string.Format("Error occurred in StaffUpsert. Message: '{0}'. Please contact support.", response.RequestMessage);
+                        TempData["ModalMessage"] = string.Format("Error occurred in NewReg. Message: '{0}'. Please contact support.", response.RequestMessage);
 
                         return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
                     }
@@ -84,7 +84,7 @@ namespace TempleVolunteerClient
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred in StaffUpsert. Message: '{0}'. Please contact support.", ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred in NewReg. Message: '{0}'. Please contact support.", ex.Message);
 
                 return RedirectPermanent("/Account/StaffModalPopUp?type=" + ModalType.Error);
             }
@@ -126,7 +126,7 @@ namespace TempleVolunteerClient
 
                     if (client.DefaultRequestHeaders.Authorization.Parameter == null)
                     {
-                        TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(int staffId): {0}. Bearer token is null. Please contact support.", viewModel.StaffId);
+                        TempData["ModalMessage"] = string.Format("Error occurred: NewReg(StaffViewModel viewModel): {0}. Bearer token is null. Please contact support.", viewModel.StaffId);
 
                         return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
                     }
@@ -135,7 +135,7 @@ namespace TempleVolunteerClient
 
                     if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
                     {
-                        TempData["ModalMessage"] = string.Format("Error occurred: New StaffUpsert(StaffViewModel viewModel). Message: '{0}'. Please contact support.", response.RequestMessage);
+                        TempData["ModalMessage"] = string.Format("Error occurred: NewReg(StaffViewModel viewModel). Message: '{0}'. Please contact support.", response.RequestMessage);
 
                         return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
                     }
@@ -147,7 +147,7 @@ namespace TempleVolunteerClient
             }
             catch (Exception ex)
             {
-                TempData["ModalMessage"] = string.Format("Error occurred: StaffUpsert(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", viewModel.StaffId, ex.Message);
+                TempData["ModalMessage"] = string.Format("Error occurred: NewReg(StaffViewModel viewModel): {0}. Message: '{1}'. Please contact support.", viewModel.StaffId, ex.Message);
 
                 return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
             }
@@ -211,7 +211,8 @@ namespace TempleVolunteerClient
                     viewModel.PhoneNumber = data.PhoneNumber;
                     viewModel.Gender = data.Gender;
                     viewModel.AcceptTerms = (bool)data.AcceptTerms;
-                    viewModel.RoleName = this.Admin == 1 ? "Admin" : "Volunteer";
+                    viewModel.RoleId = data.RoleIds[0];
+                    //viewModel.RoleName = this.Admin == 1 ? "Admin" : "Volunteer";
                     viewModel.Note = data.Note;
                     viewModel.CanViewDocuments = (bool)data.CanViewDocuments;
                     viewModel.CanSendMessages = (bool)data.CanSendMessages;
@@ -300,7 +301,8 @@ namespace TempleVolunteerClient
                     staff.EmailConfirmedDate = viewModel.EmailConfirmedDate;
                     staff.RememberMe = viewModel.RememberMe;
                     staff.CredentialIds = viewModel.CredentialIds;
-                    staff.RoleIds = viewModel.RoleIds;
+                    //staff.RoleIds = viewModel.RoleIds;
+                    staff.RoleIds = new int[1] { viewModel.RoleId };
                     staff.IsActive = viewModel.IsActive;
                     staff.IsHidden = viewModel.IsHidden;
                     staff.CreatedBy = viewModel.CreatedBy;
@@ -480,6 +482,53 @@ namespace TempleVolunteerClient
         [HttpGet]
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> StaffGetById(int staffId)
+        {
+            if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
+
+            StaffViewModel viewModel = new StaffViewModel();
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("token"));
+
+                    if (client.DefaultRequestHeaders.Authorization.Parameter == null)
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occuured in StaffGet. Bearer token is null. Please contact support.");
+
+                        return RedirectPermanent("/Staff/StaffModalPopUp");
+                    }
+
+                    HttpResponseMessage response = await client.GetAsync(string.Format("{0}/Staff?id={1}&&userId", this.Uri, staffId, GetStringSession("EmailAddress")));
+
+                    if (!response.IsSuccessStatusCode || String.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                    {
+                        TempData["ModalMessage"] = string.Format("Error occuured in StaffGet. Message: '{0}'. Please contact support.", response.RequestMessage);
+
+                        return RedirectPermanent("/Staff/StaffModalPopUp");
+                    }
+
+                    string stringData = response.Content.ReadAsStringAsync().Result;
+                    ServiceResponse data = JsonConvert.DeserializeAnonymousType<ServiceResponse>(stringData, new ServiceResponse());
+                    var json = Json(new { data = JsonConvert.DeserializeObject<StaffRequest>(data.Data.ToString()) });
+
+                    return Json(
+                        new { data = JsonConvert.DeserializeObject<StaffRequest>(data.Data.ToString()) }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ModalMessage"] = string.Format("Error occuured in StaffGet. Message: '{0}'. Please contact support.", ex.Message);
+
+                return RedirectPermanent("/Staff/StaffModalPopUp?type=" + ModalType.Error);
+            }
+        }
+
+        [HttpGet]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> TemporaryPasswordById(int staffId)
         {
             if (!IsAuthenticated()) return RedirectPermanent("/Account/LogOut");
 

@@ -60,12 +60,8 @@ namespace TempleVolunteerClient
                 viewModel.Country = "US";
                 viewModel.PhoneNumber = "213-555-5555";
                 viewModel.EmailAddress = "hazelton1@yahoo.com";
-                viewModel.Password = "11111111";
                 viewModel.Gender = "Male";
-                //viewModel.Kriyaban = true;
-                //viewModel.LessonStudent = true;
-                //viewModel.CPR = false;
-                //viewModel.FirstAid = false;
+                viewModel.TemplePropertyId = 1;
                 viewModel.AcceptTerms = true;
             }
 
@@ -92,7 +88,6 @@ namespace TempleVolunteerClient
                         Country = viewModel.Country,
                         PostalCode = viewModel.PostalCode,
                         EmailAddress = viewModel.EmailAddress,
-                        Password = viewModel.Password,
                         PhoneNumber = viewModel.PhoneNumber,
                         Gender = viewModel.Gender,
                         AcceptTerms = true,
@@ -397,6 +392,7 @@ namespace TempleVolunteerClient
                             return RedirectPermanent("/Account/AccountModalPopUp?type=" + ModalType.Error);
                         }
 
+
                         var token = new JwtSecurityToken(jwtEncodedString: jwt.AccessToken);
                         this.SetStringSession("EmailAddress", viewModel.EmailAddress);
                         this.SetStringSession("FirstName", responseDeserialized.FirstName);
@@ -406,6 +402,12 @@ namespace TempleVolunteerClient
                         this.SetIntSession("PropertyId", viewModel.TemplePropertyId);
                         this.SetStringSession("PropertyName", responseDeserialized.PropertyName);
                         this.SetStringSession("Token", token.RawData);
+
+                        if (responseDeserialized.TemporaryPasswordExists)
+                        {
+                            TempData["Message"] = "Please create a new password, instead of using temporary password.";
+                            return RedirectToAction("ResetPassword", "Account");
+                        }
 
                         return RedirectToAction("Index", "Home");
                     }

@@ -10,5 +10,6 @@
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
         public string PropertyName { get; set; }
+        public bool TemporaryPasswordExists { get; set; }
     }
 }

@@ -56,6 +56,12 @@
     padding: 15px;
 }
 
+.reset-temporary {
+    font-size: 14px;
+    color: blue;
+    font-weight:600;
+}
+
 input[type=file] {
     color: transparent;
 }
